@@ -1,0 +1,6 @@
+name: struct_tower
+kind: structure
+structure: {style: tower, roof: flat, floors: 5}
+style_template: souls_like
+texture_size: 512
+seed: 5

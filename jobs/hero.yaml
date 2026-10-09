@@ -1,0 +1,14 @@
+# One character. The YAML + sketch are the source of truth; everything under out/ is a build artifact.
+name: hero
+sketch: ../examples/sketches/hero_front.png   # front view, standing/A-pose, dark lines on light background
+style: stylized                               # lowpoly | stylized | realistic  (sets default budget + segments)
+provider: procedural                          # procedural | import_glb | command
+target_engine: unity
+height_m: 1.8
+poly_budget: 2500                             # triangles for LOD0
+lods: [1.0, 0.5, 0.25]
+naming: ue                                    # ue (mannequin-style names) | simple
+formats: [glb]
+max_iterations: 4
+# params:                                     # pin any procedural parameter; pinned values are never auto-adjusted
+#   arm_angle_deg: 25

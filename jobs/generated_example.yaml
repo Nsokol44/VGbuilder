@@ -1,0 +1,15 @@
+# Same pipeline, but the base mesh comes from an external generator instead of the procedural body.
+# `command` is the contract: any program that turns {image} into a glb at {out}.
+# This example uses a fake generator so it runs anywhere; point it at a TRELLIS.2 / Hunyuan3D wrapper.
+name: generated
+sketch: ../examples/sketches/stocky_front.png
+style: stylized
+provider: command
+provider_args:
+  command: "{python} ../examples/fake_generator.py {image} {out}"
+height_m: 1.75
+poly_budget: 1200
+lods: [1.0, 0.5, 0.25]
+naming: simple
+formats: [glb]
+max_iterations: 2

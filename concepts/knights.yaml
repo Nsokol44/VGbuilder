@@ -1,0 +1,15 @@
+# Concept stage: sample silhouette variants, reject the shapeless / unreadable / look-alike ones, keep a diverse few
+# and write a job file for each. Run:  charforge concepts concepts/knights.yaml -o out
+name: knights
+style_template: souls_like      # its `silhouette:` block holds the thresholds
+count: 60                       # candidates to sample
+select: 4                       # winners to emit as jobs
+seed: 3
+accessories_pool: [pauldrons, horns, cape]
+job:                            # copied into every emitted job
+  style: stylized
+  target_engine: unity
+  height_m: 1.8
+  poly_budget: 3000
+  animations: [idle, walk]
+# exclude_dir: ../library/silhouettes   # PNGs of characters you already have; winners must differ from them

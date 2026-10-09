@@ -1,0 +1,8 @@
+# A damaged gothic hall: the same seed always breaks the same way, at every level of detail.
+name: struct_ruin
+kind: structure
+structure: {style: gothic, damage: 0.45}
+style_template: souls_like
+texture_size: 512
+seed: 11
+poly_budget: 4000

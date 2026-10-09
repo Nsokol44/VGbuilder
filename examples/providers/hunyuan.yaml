@@ -1,0 +1,16 @@
+# Example only: a Hunyuan3D-style HTTP server. Field names below are the defaults for provider `hunyuan`
+# (/generate, JSON {image: <base64>, seed: n}, response = GLB bytes). They were NOT checked against a live server:
+# if yours differs, change image_field / seed_field / endpoint / payload / response / response_key here.
+name: hero_hunyuan
+sketch: ../sketches/hero_front.png
+provider: hunyuan
+provider_args:
+  url: http://127.0.0.1:8081
+  model: Hunyuan3D-2.1
+  payload: {texture: true, octree_resolution: 256}      # merged into the request body
+  # response: json_base64                                # when the server wraps the GLB in JSON ...
+  # response_key: result.model_b64                        # ... under this (dotted) key
+  # headers: {Authorization: "Bearer ${HUNYUAN_TOKEN}"}  # ${VAR} is read from the environment, never stored
+  timeout_s: 900
+height_m: 1.8
+poly_budget: 6000

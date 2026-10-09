@@ -1,0 +1,37 @@
+name: souls_like
+description: >
+  Desaturated, ancient, damp-dungeon look. Elegant worn armour set against creeping rot.
+  A generic dark-fantasy look defined purely by palette and wear numbers.
+palette:
+  base: ["#4b463f", "#3f3b36", "#55504a"]
+  accent: ["#7a6a45"]            # tarnished trim
+  rot: ["#4a5438", "#573b3b"]    # sickly green, bruise
+  grime: "#1d1a16"
+  rust: "#6a3d24"
+  blood: "#3c1717"
+max_saturation: 0.34
+value_range: [0.06, 0.50]
+wear:
+  intensity: 0.75
+  edge_wear: 0.65
+  lower_dirt: 0.85
+  rust: 0.45
+  rot: 0.35
+  blood: 0.0
+  noise_scale: 7.0
+roughness: [0.55, 0.95]
+coverage:
+  grime: [0.12, 0.80]
+rot_fraction: [0.03, 0.45]     # enough rot to read, not so much it swallows the design
+min_clean_fraction: 0.08       # some surface must stay clean so elegant vs rotten contrast reads
+silhouette:
+  solidity: [0.50, 0.90]       # area / convex-hull area: below = ragged, above = blob
+  min_lobes: 2                 # distinct protrusions (horns, pauldrons, cape)
+  min_uniqueness: 0.10         # 1 - best IoU against anything already in the library
+  min_limb_separation: 0.5     # share of arm-height rows where arms are clear of the torso
+checklist:
+  - Silhouette is distinct from existing library assets
+  - Elegant armour reads clearly against the rot
+  - Wear is concentrated at lower edges and crevices
+  - Palette is desaturated, somber, damp
+  - Combat silhouette is readable (limbs and weapon-side clearly separated)

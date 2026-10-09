@@ -1,0 +1,28 @@
+name: clean_lowpoly
+description: Bright, flat, readable low-poly look with only light edge wear.
+palette:
+  base: ["#5b7fb0", "#c9884f", "#7aa874"]
+  accent: ["#e9d9a6"]
+  grime: "#4a4a55"
+  rust: "#a8613a"
+max_saturation: 0.65
+value_range: [0.25, 0.95]
+wear:
+  intensity: 0.15
+  edge_wear: 0.2
+  lower_dirt: 0.15
+  rust: 0.0
+  rot: 0.0
+  noise_scale: 4.0
+roughness: [0.6, 0.9]
+coverage:
+  grime: [0.0, 0.30]
+rot_fraction: [0.0, 0.0]
+min_clean_fraction: 0.5
+silhouette:
+  solidity: [0.55, 0.95]
+  min_lobes: 1
+  min_uniqueness: 0.05
+checklist:
+  - Shapes are simple and readable at small size
+  - Colours are clean and consistent

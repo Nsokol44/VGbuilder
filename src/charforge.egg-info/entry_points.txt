@@ -1,0 +1,2 @@
+[console_scripts]
+charforge = charforge.cli:main

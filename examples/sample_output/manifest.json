@@ -1,0 +1,192 @@
+{
+  "charforge_version": "0.1.0",
+  "name": "hero",
+  "fingerprint": "e96f760da29dd8cb",
+  "spec": {
+    "name": "hero",
+    "sketch": "../examples/sketches/hero_front.png",
+    "style": "stylized",
+    "provider": "procedural",
+    "provider_args": {},
+    "target_engine": "unity",
+    "height_m": 1.8,
+    "poly_budget": 2500,
+    "lods": [
+      1.0,
+      0.5,
+      0.25
+    ],
+    "naming": "ue",
+    "formats": [
+      "glb"
+    ],
+    "params": {},
+    "qa": {},
+    "seed": 0,
+    "fit_prior": 0.0,
+    "max_iterations": 4,
+    "notes": ""
+  },
+  "environment": {
+    "python": "3.13.16",
+    "numpy": "2.5.3",
+    "platform": "Linux-6.18.44-fc-v80-x86_64-with-glibc2.39"
+  },
+  "iterations": [
+    {
+      "iteration": 1,
+      "params": {
+        "head_scale": 0.9070075204125482,
+        "shoulder_half": 0.09740370479270802,
+        "waist_half": 0.09497792178770952,
+        "hip_half": 0.09564963128491624,
+        "leg_frac": 0.4946254927374302,
+        "arm_frac": 0.3,
+        "arm_thickness": 0.84495,
+        "leg_thickness": 1.1001,
+        "torso_depth": 1.0,
+        "arm_angle_deg": 17.1,
+        "segments": 12.0
+      },
+      "metrics": {
+        "lod_tris": [
+          2052,
+          1026,
+          512
+        ],
+        "height_m": 1.7999999523162842,
+        "width_m": 0.7533532381057739,
+        "symmetry": 7.16133313692672e-19,
+        "zero_weight_frac": 0.0,
+        "loose_parts": 21,
+        "non_manifold_edges": 0,
+        "bone_names": [
+          "root",
+          "pelvis",
+          "spine_01",
+          "spine_02",
+          "neck_01",
+          "head",
+          "upperarm_l",
+          "lowerarm_l",
+          "hand_l",
+          "upperarm_r",
+          "lowerarm_r",
+          "hand_r",
+          "thigh_l",
+          "calf_l",
+          "foot_l",
+          "thigh_r",
+          "calf_r",
+          "foot_r"
+        ],
+        "bone_roles": [
+          "chest",
+          "foot_l",
+          "foot_r",
+          "forearm_l",
+          "forearm_r",
+          "hand_l",
+          "hand_r",
+          "head",
+          "neck",
+          "pelvis",
+          "root",
+          "shin_l",
+          "shin_r",
+          "spine",
+          "thigh_l",
+          "thigh_r",
+          "upperarm_l",
+          "upperarm_r"
+        ],
+        "has_uv": true,
+        "has_material": true,
+        "vertex_groups": 17,
+        "stretch_max": 1.2089235511259395,
+        "weights": {
+          "method": "rigid-procedural"
+        },
+        "silhouette_iou": 0.7963006321704519,
+        "render": {
+          "mode": "workbench",
+          "views": [
+            "front",
+            "side",
+            "back",
+            "three_quarter",
+            "front_posed"
+          ]
+        },
+        "roundtrip": {
+          "ok": true,
+          "tris": 2052,
+          "height_m": 1.8000000802204017,
+          "bones": 18,
+          "skinned": true
+        }
+      },
+      "failures": [],
+      "score": 0.7963006321704519,
+      "files": [
+        "out/hero/iter_1/hero_LOD0.glb",
+        "out/hero/iter_1/hero_LOD1.glb",
+        "out/hero/iter_1/hero_LOD2.glb",
+        "out/hero/iter_1/hero_contact_sheet.png",
+        "out/hero/iter_1/hero.blend"
+      ],
+      "blender_version": "5.2.2 LTS",
+      "seconds": 1.93
+    }
+  ],
+  "status": "passed",
+  "provider": {
+    "provider": "procedural"
+  },
+  "sketch_sha256": "a015d1194cf124da2cf14081af314fc5f706c6d912fd118db461d7ba4d3424a3",
+  "fit": {
+    "segments_chosen_for_budget": 12,
+    "seed_from_sketch": {
+      "head_scale": 0.8919448025593276,
+      "shoulder_half": 0.09740370479270802,
+      "waist_half": 0.07308242673723414,
+      "hip_half": 0.07841419190434187,
+      "leg_frac": 0.4715083798882681
+    },
+    "fit": {
+      "predicted_iou": 0.7963,
+      "evaluations": 147,
+      "seed_iou": 0.6732
+    }
+  },
+  "best_iteration": 1,
+  "outputs": [
+    {
+      "file": "hero_LOD0.glb",
+      "sha256": "ce8d8d41bc01e36037ed28a69515b2fab3e8d4b8e2a98dc7ec860ebd9e4fc35c",
+      "bytes": 114920
+    },
+    {
+      "file": "hero_LOD1.glb",
+      "sha256": "1b0c540f3a5b0616ea6614330d4f81f20da793781e6565d8382a53deca3be4ad",
+      "bytes": 69396
+    },
+    {
+      "file": "hero_LOD2.glb",
+      "sha256": "4fb3a17b1162461ed67504837b858c7bd6f3c6f4294c2ac6fd84acb44abf71ea",
+      "bytes": 46128
+    },
+    {
+      "file": "hero_contact_sheet.png",
+      "sha256": "c074c1af9469d44dfb357d2d08eb82f924f9b42de7f863db16f5186bd996417c",
+      "bytes": 129750
+    },
+    {
+      "file": "hero.blend",
+      "sha256": "3fbd0cd34d53b23ea30c74b4dcc781e31157d0d33cbad0939af409505d9a5be6",
+      "bytes": 189353
+    }
+  ],
+  "final_failures": [],
+  "seconds": 6.86
+}

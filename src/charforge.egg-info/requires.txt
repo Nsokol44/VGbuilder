@@ -1,0 +1,9 @@
+numpy
+pillow
+pyyaml
+
+[blender]
+bpy
+
+[dev]
+pytest

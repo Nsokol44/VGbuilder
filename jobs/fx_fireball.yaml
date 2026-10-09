@@ -1,0 +1,10 @@
+# Effects use the same job file, runner and QA loop as characters; no Blender is involved.
+name: fx_fireball
+kind: effect
+effect:
+  template: fireball          # fireball | explosion | shockwave | smoke
+  size: 128                   # frame edge in px
+  frames: 16
+  duration_s: 0.8
+  # radius, turbulence, fade, fade_start, ramp, blend: optional overrides of the template
+style_template: souls_like    # optional: clamps the colour ramp to the style's saturation/value limits

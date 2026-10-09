@@ -1,0 +1,10 @@
+# Variant farm: 6 colour/wear variants of hero_souls. `charforge farm farms/souls.yaml --enqueue`
+base: ../jobs/hero_souls.yaml
+count: 6
+seed: 11
+vary:
+  hue_shift_deg: [-35, 35]
+  wear:
+    rot: [0.0, 0.45]
+    rust: [0.1, 0.6]
+    blood: [0.0, 0.3]

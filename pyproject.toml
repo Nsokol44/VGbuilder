@@ -1,0 +1,28 @@
+[project]
+name = "charforge"
+version = "0.1.0"
+description = "Sketch + spec -> rigged, LOD'd, QA'd game character, driven by scripts and headless Blender"
+requires-python = ">=3.11"
+dependencies = ["numpy", "pillow", "pyyaml"]
+
+[project.optional-dependencies]
+# Blender as a Python module. Must match your Python version (bpy 5.2 wheels exist for cp313).
+blender = ["bpy"]
+dev = ["pytest"]
+
+[project.scripts]
+charforge = "charforge.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+charforge = ["styles_builtin/*.yaml", "blender_addon/*.py", "blender_addon/charforge_live/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["bpy: needs the bpy module (headless Blender)"]

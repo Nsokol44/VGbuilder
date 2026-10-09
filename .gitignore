@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# build output
+out/
+out2/
+*.zip
+
+# charforge working files
+*.bak
+live.heartbeat

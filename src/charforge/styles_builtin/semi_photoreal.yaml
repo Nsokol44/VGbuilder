@@ -1,0 +1,30 @@
+name: semi_photoreal
+description: Natural, moderately worn materials; restrained saturation.
+palette:
+  base: ["#6b5f52", "#585d63", "#7a6e5d"]
+  accent: ["#8f7c55"]
+  rot: ["#59603f"]
+  grime: "#26221d"
+  rust: "#7a4529"
+  blood: "#4a1c1c"
+max_saturation: 0.45
+value_range: [0.10, 0.70]
+wear:
+  intensity: 0.45
+  edge_wear: 0.45
+  lower_dirt: 0.55
+  rust: 0.25
+  rot: 0.0
+  noise_scale: 8.0
+roughness: [0.45, 0.9]
+coverage:
+  grime: [0.05, 0.60]
+rot_fraction: [0.0, 0.10]
+min_clean_fraction: 0.2
+silhouette:
+  solidity: [0.50, 0.92]
+  min_lobes: 1
+  min_uniqueness: 0.08
+checklist:
+  - Materials read as plausible metal, cloth and leather
+  - Wear follows edges, lower areas and crevices

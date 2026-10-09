@@ -1,0 +1,12 @@
+# Front + side sketch. The side view separates "thick" from "long", which a front silhouette cannot.
+name: hero_2view
+sketch: ../examples/sketches/hero_front.png
+sketch_side: ../examples/sketches/hero_side.png   # character faces left in this image (side_facing: left is the default)
+style: stylized
+provider: procedural
+target_engine: unity
+height_m: 1.8
+poly_budget: 2500
+lods: [1.0, 0.5, 0.25]
+formats: [glb]
+max_iterations: 4

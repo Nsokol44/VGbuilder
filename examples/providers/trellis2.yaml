@@ -1,0 +1,17 @@
+# Example only (not in jobs/, because it needs a wrapper you provide): an image-to-3D model on a local GPU.
+# charforge never calls TRELLIS itself. `command` is YOUR program: it reads {image}, writes a GLB to {out}, exits 0.
+# Placeholders: {python} {image} {side_image} {out} {seed} {name} {faces} {texture_size}
+name: hero_trellis
+sketch: ../sketches/hero_front.png
+provider: trellis2
+provider_args:
+  command: "{python} my_trellis_wrapper.py {image} {out} --seed {seed} --faces {faces}"
+  model: TRELLIS.2          # recorded in the provenance of every file, nothing more
+  model_version: "4B"
+  faces: 20000              # hint passed to your wrapper
+  texture_size: 1024
+  timeout_s: 900
+  # resource: gpu           # default for trellis2: the queue runs one such job at a time (`--limit gpu=2` to change)
+height_m: 1.8
+poly_budget: 6000
+style_template: souls_like

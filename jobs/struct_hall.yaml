@@ -1,0 +1,15 @@
+# kind: structure -> a building from numbers (no sketch, no Blender node setup: Python-generated geometry).
+# LOD k = detail level k (0 full, 1 no trim, 2 massing box + roof), not a decimation ratio.
+name: struct_hall
+kind: structure
+structure:
+  style: hall             # hall | gothic | tower  (every key below overrides the style default)
+  footprint: [12, 7]      # metres, width x depth; the door is in the front (-Y) wall
+  floors: 2
+  roof: gable             # gable | hip | flat | spire
+style_template: souls_like
+style: stylized
+texture_size: 512
+target_engine: godot
+formats: [glb]
+seed: 3

@@ -1,0 +1,15 @@
+# Accessories (pauldrons + horns join the body mesh; the cape is a separate cloth-tagged mesh with pin weights)
+# and looping idle / walk cycles exported inside the glTF.
+name: hero_gear
+sketch: ../examples/sketches/hero_front.png
+sketch_side: ../examples/sketches/hero_side.png
+style: stylized
+style_template: souls_like
+provider: procedural
+target_engine: unity
+height_m: 1.8
+poly_budget: 3000
+accessories: [pauldrons, horns, cape]
+animations: [idle, walk]
+formats: [glb, fbx]
+max_iterations: 4

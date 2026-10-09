@@ -1,0 +1,10 @@
+name: stocky
+sketch: ../examples/sketches/stocky_front.png
+style: lowpoly
+provider: procedural
+target_engine: godot
+height_m: 1.7
+poly_budget: 900
+lods: [1.0, 0.5]
+naming: simple
+formats: [glb, fbx]
