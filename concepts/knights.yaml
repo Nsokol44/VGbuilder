@@ -1,5 +1,5 @@
 # Concept stage: sample silhouette variants, reject the shapeless / unreadable / look-alike ones, keep a diverse few
-# and write a job file for each. Run:  charforge concepts concepts/knights.yaml -o out
+# and write a job file for each. Run:  vgbuilder concepts concepts/knights.yaml -o out
 name: knights
 style_template: souls_like      # its `silhouette:` block holds the thresholds
 count: 60                       # candidates to sample

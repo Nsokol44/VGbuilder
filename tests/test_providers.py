@@ -16,13 +16,13 @@ from pathlib import Path
 import pytest
 import yaml
 
-from charforge import providers
+from vgbuilder import providers
 from glbs import make_glb
-from charforge.farm import make_variants
-from charforge.library import Library, work
-from charforge.orchestrator import Backend, build_one
-from charforge.providers import ProviderError, build_http_request, inspect_glb, provide_glb, resource_of, validate_args
-from charforge.spec import JobSpec, load_job
+from vgbuilder.farm import make_variants
+from vgbuilder.library import Library, work
+from vgbuilder.orchestrator import Backend, build_one
+from vgbuilder.providers import ProviderError, build_http_request, inspect_glb, provide_glb, resource_of, validate_args
+from vgbuilder.spec import JobSpec, load_job
 
 ROOT = Path(__file__).resolve().parents[1]
 SKETCH = ROOT / "examples" / "sketches" / "hero_front.png"
@@ -315,7 +315,7 @@ def test_hunyuan_provider_full_build_embeds_provenance(tmp_path, mock, generated
     m = build_one(spec, tmp_path / "out", Backend(kind="bpy-module"))
     assert m["status"] in ("passed", "needs_review"), m.get("error")
     assert m["provider"]["model"] == "mock-hunyuan" and m["provider"]["glb_info"]["triangles"] > 100
-    from charforge.bl.export import read_embedded
+    from vgbuilder.bl.export import read_embedded
     emb = read_embedded(tmp_path / "out" / "gen_http" / "final" / "gen_http_LOD0.glb")
     assert emb["provider"]["model"] == "mock-hunyuan" and "seconds" not in emb["provider"] and "cached" not in emb["provider"]
     # rebuilding from the provider cache must give byte-identical files
@@ -343,7 +343,7 @@ def test_queue_retries_only_retryable_provider_errors(tmp_path, mock):
 
 # ---------------------------------------------------------------- QA gate for generated meshes
 def _qa_metrics(iou):
-    from charforge import rigdefs
+    from vgbuilder import rigdefs
     return {"lod_tris": [1000, 500], "height_m": 1.8, "symmetry": 0.001, "zero_weight_frac": 0.0, "loose_parts": 20,
             "bone_roles": rigdefs.ROLES, "has_uv": True, "stretch_max": 1.2, "roundtrip": {"ok": True}, "silhouette_iou": iou}
 
@@ -356,7 +356,7 @@ def _qa_metrics(iou):
     ("trellis2", 0.90, []),
 ])
 def test_generated_meshes_have_their_own_silhouette_gate_and_a_collapse_gate(provider, iou, codes):
-    from charforge import qa
+    from vgbuilder import qa
     s = JobSpec(name="a", sketch="x.png", poly_budget=1200, provider=provider,
                 provider_args={} if provider == "procedural" else {"command": "x"} if provider == "trellis2" else {"url": "http://x"})
     assert [f["code"] for f in qa.evaluate(_qa_metrics(iou), s)] == codes
@@ -373,7 +373,7 @@ def test_example_provider_jobs_validate(p):
 
 @pytest.mark.parametrize("p", sorted((ROOT / "jobs").glob("*.yaml")))
 def test_every_file_in_jobs_is_a_job(p):
-    load_job(p)          # `charforge run jobs` validates the whole folder up front, so one stray file breaks it
+    load_job(p)          # `vgbuilder run jobs` validates the whole folder up front, so one stray file breaks it
 
 
 @pytest.mark.parametrize("p", sorted((ROOT / "farms").glob("*.yaml")))

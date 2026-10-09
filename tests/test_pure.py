@@ -10,9 +10,9 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "examples"))
 
-from charforge import fit, fixer, qa, rigdefs, sketch as sk  # noqa: E402
-from charforge.bodygen import build_body, choose_segments, silhouette  # noqa: E402
-from charforge.spec import DEFAULT_BODY_PARAMS, JobSpec, load_job  # noqa: E402
+from vgbuilder import fit, fixer, qa, rigdefs, sketch as sk  # noqa: E402
+from vgbuilder.bodygen import build_body, choose_segments, silhouette  # noqa: E402
+from vgbuilder.spec import DEFAULT_BODY_PARAMS, JobSpec, load_job  # noqa: E402
 from make_sketch import draw  # noqa: E402
 
 
@@ -229,7 +229,7 @@ def test_joints_from_vertices_follows_t_pose_arms():
 
 # ---------------------------------------------------------------- engines
 def test_engine_presets_and_auto_naming():
-    from charforge import engines
+    from vgbuilder import engines
 
     assert set(engines.PRESETS) == {"generic", "unity", "unreal", "godot"}
     assert JobSpec(name="a", target_engine="unity").resolved_naming() == "humanoid"

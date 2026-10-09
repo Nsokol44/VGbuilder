@@ -14,12 +14,12 @@ from pathlib import Path
 import pytest
 import yaml
 
-from charforge import critic as critic_mod
-from charforge.farm import load_farm, make_variants
-from charforge.library import Library, summarize, work
-from charforge.orchestrator import Backend
-from charforge.review_ui import serve
-from charforge.spec import load_job
+from vgbuilder import critic as critic_mod
+from vgbuilder.farm import load_farm, make_variants
+from vgbuilder.library import Library, summarize, work
+from vgbuilder.orchestrator import Backend
+from vgbuilder.review_ui import serve
+from vgbuilder.spec import load_job
 
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND = Backend(kind="bpy-module")
@@ -98,7 +98,7 @@ def test_recover_after_simulated_crash(lib, tmp_path):
 
 
 def test_infrastructure_errors_retry_then_fail_but_needs_review_is_final(lib, tmp_path, monkeypatch):
-    from charforge import orchestrator
+    from vgbuilder import orchestrator
     calls = {"n": 0}
 
     def boom(spec, out_root, backend, log=None):
@@ -389,7 +389,7 @@ def test_claim_respects_resource_limits_without_blocking_other_work(lib, tmp_pat
 
 
 def test_work_never_runs_more_gpu_jobs_than_the_limit(lib, tmp_path, monkeypatch):
-    from charforge import orchestrator
+    from vgbuilder import orchestrator
     lock = threading.Lock()
     state = {"gpu": 0, "max_gpu": 0, "overlap_cpu": False, "cpu_running": 0}
 
@@ -439,6 +439,6 @@ def test_library_made_before_resource_tags_is_migrated(tmp_path):
 
 
 def test_cli_limit_flag_is_validated(tmp_path, capsys):
-    from charforge.cli import main
+    from vgbuilder.cli import main
     assert main(["queue", "--db", str(tmp_path / "l.db"), "work", "-o", str(tmp_path), "--limit", "gpu=zero"]) == 1
     assert "bad --limit" in capsys.readouterr().out

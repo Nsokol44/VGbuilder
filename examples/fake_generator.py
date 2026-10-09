@@ -14,10 +14,10 @@ import sys
 
 import bpy
 
-from charforge.bl import condition
-from charforge.bl.procedural import mesh_from_body
-from charforge.bodygen import build_body
-from charforge.spec import DEFAULT_BODY_PARAMS
+from vgbuilder.bl import condition
+from vgbuilder.bl.procedural import mesh_from_body
+from vgbuilder.bodygen import build_body
+from vgbuilder.spec import DEFAULT_BODY_PARAMS
 
 
 def main(image: str, out: str) -> None:

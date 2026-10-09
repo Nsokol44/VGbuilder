@@ -17,7 +17,7 @@ def _select_only(objs) -> None:
     bpy.context.view_layer.objects.active = objs[0]
 
 
-EMBED_KEY = "charforge"
+EMBED_KEY = "vgbuilder"
 
 
 def read_embedded(glb: Path) -> dict | None:

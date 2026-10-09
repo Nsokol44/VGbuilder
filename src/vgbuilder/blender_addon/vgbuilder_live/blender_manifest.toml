@@ -1,9 +1,9 @@
 schema_version = "1.0.0"
-id = "charforge_live"
+id = "vgbuilder_live"
 version = "0.1.0"
-name = "charforge live"
-tagline = "Live view and sliders for charforge jobs"
-maintainer = "charforge"
+name = "vgbuilder live"
+tagline = "Live view and sliders for vgbuilder jobs"
+maintainer = "vgbuilder"
 type = "add-on"
 blender_version_min = "4.2.0"
 license = ["SPDX:GPL-3.0-or-later"]

@@ -4,9 +4,9 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from charforge import fixer, lookdev, qa, styles
-from charforge.bodygen import _Builder, build_body
-from charforge.spec import DEFAULT_BODY_PARAMS, JobSpec
+from vgbuilder import fixer, lookdev, qa, styles
+from vgbuilder.bodygen import _Builder, build_body
+from vgbuilder.spec import DEFAULT_BODY_PARAMS, JobSpec
 
 H = 1.8
 
@@ -145,7 +145,7 @@ def test_empty_texture_is_reported():
 # ------------------------------------------------ closed loop through qa + fixer
 def _metrics_for(mesh, scale, style="souls_like"):
     st, bk = bake(mesh, style, wear_scale=scale)
-    from charforge import rigdefs
+    from vgbuilder import rigdefs
     return {"lod_tris": [1000], "height_m": H, "symmetry": 0.0, "zero_weight_frac": 0.0, "loose_parts": 1,
             "bone_roles": rigdefs.ROLES, "has_uv": True, "stretch_max": 1.0, "roundtrip": {"ok": True},
             "texture": {"mode": "replace", "analysis": measure(st, bk)}}

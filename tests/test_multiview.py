@@ -10,9 +10,9 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "examples"))
 
-from charforge import fit, fixer, proportions, providers, qa, sketch as sk  # noqa: E402
-from charforge.bodygen import build_body, silhouette_side  # noqa: E402
-from charforge.spec import DEFAULT_BODY_PARAMS, JobSpec  # noqa: E402
+from vgbuilder import fit, fixer, proportions, providers, qa, sketch as sk  # noqa: E402
+from vgbuilder.bodygen import build_body, silhouette_side  # noqa: E402
+from vgbuilder.spec import DEFAULT_BODY_PARAMS, JobSpec  # noqa: E402
 from make_sketch import draw, draw_side  # noqa: E402
 
 
@@ -146,7 +146,7 @@ def test_realistic_alternative_is_offered_when_a_fit_looks_odd(sk_dir):
 
 # ----------------------------------------------------------------- qa/spec
 def _metrics(**kw):
-    from charforge import rigdefs
+    from vgbuilder import rigdefs
     return {"lod_tris": [1000, 500], "height_m": 1.8, "symmetry": 0.001, "zero_weight_frac": 0.0,
             "loose_parts": 20, "bone_roles": rigdefs.ROLES, "has_uv": True, "stretch_max": 1.2,
             "roundtrip": {"ok": True}, "silhouette_iou": 0.9, **kw}

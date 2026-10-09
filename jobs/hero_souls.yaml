@@ -3,7 +3,7 @@ name: hero_souls
 sketch: ../examples/sketches/hero_front.png
 sketch_side: ../examples/sketches/hero_side.png
 style: stylized
-style_template: souls_like        # see src/charforge/styles_builtin/ ; put your own in jobs/styles/
+style_template: souls_like        # see src/vgbuilder/styles_builtin/ ; put your own in jobs/styles/
 style_overrides: {hue_shift_deg: 0}
 wear: {rot: 0.30}                 # per-job tweak of the template's wear numbers
 texture_size: 512

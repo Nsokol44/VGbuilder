@@ -1,4 +1,4 @@
-# charforge
+# VGbuilder
 
 Sketch + a short YAML spec in — a rigged, LOD'd, textured, QA'd game character, a
 building, or a VFX flipbook out. Everything is driven by scripts and headless
@@ -24,9 +24,9 @@ versions, and file hashes.
 ```bash
 pip install -e ".[dev,blender]"     # the blender extra is the bpy wheel — use Python 3.13 for bpy 5.2
 python examples/make_sketch.py      # synthetic test sketches (front + side)
-charforge validate jobs/hero_gear.yaml
-charforge run jobs/hero_gear.yaml -o out
-charforge run jobs -o out -w 4      # or every job in a folder
+vgbuilder validate jobs/hero_gear.yaml
+vgbuilder run jobs/hero_gear.yaml -o out
+vgbuilder run jobs -o out -w 4      # or every job in a folder
 ```
 
 Per job you get `out/<name>/final/` — a `.glb` per LOD, optional FBX, the
@@ -41,20 +41,20 @@ Per job you get `out/<name>/final/` — a `.glb` per LOD, optional FBX, the
 
 | Command | What it does |
 |---|---|
-| `charforge validate JOB...` | check job files against the schema without building |
-| `charforge run JOB\|DIR -o OUT [-w N]` | build one job or a folder of them |
-| `charforge concepts concept.yaml` | parametric silhouette variants, scored for solidity, limb separation and uniqueness; emits jobs for the diverse winners |
-| `charforge farm farm.yaml [--enqueue]` | expand deterministic ranges (hue, wear, proportions, knobs) into variant jobs |
-| `charforge queue add/list/work/recover` | persistent priority queue: atomic claims, crash recovery, retries only for errors that can change, per-resource limits (one GPU job at a time) |
-| `charforge library list/show/review/ingest/silhouettes` | SQLite asset library, versioned by spec fingerprint, with tags and QA summaries |
-| `charforge library serve` | local review web page: contact sheets, approve/reject with a note, queue view (binds to 127.0.0.1, no login — don't expose it) |
-| `charforge watch JOB -o OUT` | live link: rebuild whenever the YAML, a sketch, or the live overrides change |
-| `charforge overrides show/set/clear/apply JOB` | read/write the slider overrides; `apply` folds them into the YAML (`--write` keeps a `.bak`) |
-| `charforge addon zip -O charforge_live.zip` | package the Blender add-on |
-| `charforge blender JOB --exe /path/to/blender` | start the watcher and open Blender already connected |
+| `vgbuilder validate JOB...` | check job files against the schema without building |
+| `vgbuilder run JOB\|DIR -o OUT [-w N]` | build one job or a folder of them |
+| `vgbuilder concepts concept.yaml` | parametric silhouette variants, scored for solidity, limb separation and uniqueness; emits jobs for the diverse winners |
+| `vgbuilder farm farm.yaml [--enqueue]` | expand deterministic ranges (hue, wear, proportions, knobs) into variant jobs |
+| `vgbuilder queue add/list/work/recover` | persistent priority queue: atomic claims, crash recovery, retries only for errors that can change, per-resource limits (one GPU job at a time) |
+| `vgbuilder library list/show/review/ingest/silhouettes` | SQLite asset library, versioned by spec fingerprint, with tags and QA summaries |
+| `vgbuilder library serve` | local review web page: contact sheets, approve/reject with a note, queue view (binds to 127.0.0.1, no login — don't expose it) |
+| `vgbuilder watch JOB -o OUT` | live link: rebuild whenever the YAML, a sketch, or the live overrides change |
+| `vgbuilder overrides show/set/clear/apply JOB` | read/write the slider overrides; `apply` folds them into the YAML (`--write` keeps a `.bak`) |
+| `vgbuilder addon zip -O vgbuilder_live.zip` | package the Blender add-on |
+| `vgbuilder blender JOB --exe /path/to/blender` | start the watcher and open Blender already connected |
 
-A typical batch: `charforge farm farms/souls.yaml --enqueue`,
-`charforge queue work -w 2`, `charforge library serve`, review, then export
+A typical batch: `vgbuilder farm farms/souls.yaml --enqueue`,
+`vgbuilder queue work -w 2`, `vgbuilder library serve`, review, then export
 the approved silhouettes and point a concept file's `exclude_dir` at them so
 the next concepts stay different from what you already have.
 
@@ -65,18 +65,18 @@ to run the *same* build while you watch it in a running Blender
 (full details: [docs/LIVE.md](docs/LIVE.md)):
 
 ```bash
-charforge watch jobs/struct_hall.yaml -o out     # terminal 1: build now, rebuild on every change
-charforge addon zip -O charforge_live.zip        # install in Blender: Preferences > Add-ons > Install from Disk
-# in Blender: 3D Viewport sidebar (N) > charforge > Session = out/_live/struct_hall > Connect
+vgbuilder watch jobs/struct_hall.yaml -o out     # terminal 1: build now, rebuild on every change
+vgbuilder addon zip -O vgbuilder_live.zip        # install in Blender: Preferences > Add-ons > Install from Disk
+# in Blender: 3D Viewport sidebar (N) > vgbuilder > Session = out/_live/struct_hall > Connect
 ```
 
 The add-on needs nothing but Blender. It reads `live.json`, turns the job's
 numbers into sliders, writes `live_overrides.json`, and swaps the imported
 objects when a build finishes — keeping your placement of the parent empty and
 your selection. *Keep this version* detaches the current build so the next one
-imports fresh; *Send to charforge* drops the selected meshes into the session
+imports fresh; *Send to vgbuilder* drops the selected meshes into the session
 inbox as an import job. Live builds go to `out/_live/`: with no overrides they
-are byte-identical to `charforge run`, and after `overrides apply` they are
+are byte-identical to `vgbuilder run`, and after `overrides apply` they are
 byte-identical to a run of the baked YAML.
 
 Rebuild speed: an effect ~2 s, a structure ~6 s, a character ~7 s per change
@@ -90,7 +90,7 @@ design knobs — never a provider, a command, or a path. A bad value (say,
 
 ## Generators (TRELLIS / Hunyuan / anything image-to-3D)
 
-charforge ships no model code. You give it a program or a server; it handles
+vgbuilder ships no model code. You give it a program or a server; it handles
 the rest of the line.
 
 - `provider: command` / `trellis2` — your program reads `{image}` (and
@@ -124,13 +124,13 @@ are rejected at validate time. Highlights:
   rust, rot and blood baked to base-colour + roughness; image-space QA
   auto-corrects wear
 - `accessories: [pauldrons, horns, cape]`, `accessory_shape` — the cape is
-  tagged `charforge_physics=cloth` with pin weights for the engine
+  tagged `vgbuilder_physics=cloth` with pin weights for the engine
 - `animations: [idle, walk]` — procedural loops with loop-closure and
   floor-penetration QA
 - `target_engine: generic/unity/unreal/godot` — bone naming, skin-influence
   limits, FBX axes
 - `critic: {command, min_score}` — an external scoring hook (JSON contract in
-  `src/charforge/critic.py`); annotates the library only
+  `src/vgbuilder/critic.py`); annotates the library only
 
 `docs/GAP_ANALYSIS.md` compares the pipeline against an "A-to-Z agentic asset
 pipeline" write-up, row by row.
@@ -163,7 +163,7 @@ through Blender's own add-on manager).
 **Not verified:**
 
 - **The Blender GUI itself** — panel layout, slider dragging, real timer
-  ticks, the `charforge blender` launcher, and anything on Windows or macOS.
+  ticks, the `vgbuilder blender` launcher, and anything on Windows or macOS.
   The logic behind all of it is tested; the pixels are not.
 - **Real TRELLIS / Hunyuan servers.** The `hunyuan` HTTP defaults come from a
   description of Hunyuan3D-2.x's API server, not a live server. Contract tests

@@ -2,8 +2,8 @@
 
 Two ways to run the same build:
 
-- **Pure python / headless** (`charforge run`, the queue, the farm): unchanged. Nothing here needs a Blender window.
-- **Live in Blender**: `charforge watch` rebuilds a job whenever you change it, and the add-on shows the result in your
+- **Pure python / headless** (`vgbuilder run`, the queue, the farm): unchanged. Nothing here needs a Blender window.
+- **Live in Blender**: `vgbuilder watch` rebuilds a job whenever you change it, and the add-on shows the result in your
   open Blender and gives you the job's numbers as sliders.
 
 The two never talk to each other directly. They share a folder and three small JSON files, so either side can be a
@@ -15,22 +15,22 @@ out/_live/<name>/
   live.json             the watcher writes  state, build_id, seq_applied, result, files, controls, fast, inbox
   live.heartbeat        touched ~1/s while the watcher lives (the add-on shows "watcher not running" when it is stale)
   published/00007/      immutable copy of build 7 (last 3 kept); live.json points here, so a reader never sees a half-written file
-  inbox/                what "Send selection to charforge" writes (a .glb, then its .yaml job)
+  inbox/                what "Send selection to vgbuilder" writes (a .glb, then its .yaml job)
   manifest.json, final/, iter_*/   the ordinary build output of the latest build
 ```
 
 ## Use it
 
 ```
-charforge watch jobs/struct_hall.yaml -o out          # terminal 1: build now, rebuild on every change (--fast for previews)
-charforge addon zip -O charforge_live.zip              # once: Blender > Preferences > Add-ons > Install from Disk
-# in Blender: 3D Viewport sidebar > charforge > Session = out/_live/struct_hall > Connect
+vgbuilder watch jobs/struct_hall.yaml -o out          # terminal 1: build now, rebuild on every change (--fast for previews)
+vgbuilder addon zip -O vgbuilder_live.zip              # once: Blender > Preferences > Add-ons > Install from Disk
+# in Blender: 3D Viewport sidebar > vgbuilder > Session = out/_live/struct_hall > Connect
 ```
 
-or `charforge blender jobs/struct_hall.yaml --exe /path/to/blender` (starts the watcher and opens Blender with the add-on
+or `vgbuilder blender jobs/struct_hall.yaml --exe /path/to/blender` (starts the watcher and opens Blender with the add-on
 loaded from the source folder and connected), or, inside Blender, set the job file and press *Start watcher*.
 
-What changes the build: saving the job `.yaml` in any editor, a slider, `charforge overrides set JOB path=value`, a change to a
+What changes the build: saving the job `.yaml` in any editor, a slider, `vgbuilder overrides set JOB path=value`, a change to a
 sketch or to a file in the job's `styles/` folder. Several quick changes become one rebuild (a change must hold still
 for two polls, 0.25 s each, and edits that arrive during a build trigger one more build after it).
 
@@ -45,12 +45,12 @@ critic command, a name or a path, because anything that can write the overrides 
   validator's message and keeps showing the last good build and its sliders.
 - Moving a character body slider writes `params.<name>`, which **pins** that parameter: the sketch fit and the auto-fixer
   stop touching it. Untouched sliders show the value the last build used (the fitted one).
-- `charforge overrides show|set|clear JOB` read and write the file; `charforge overrides apply JOB` prints a diff of the
+- `vgbuilder overrides show|set|clear JOB` read and write the file; `vgbuilder overrides apply JOB` prints a diff of the
   YAML with the overrides folded in, and `--write` replaces the job (keeping `JOB.bak`) and clears the overrides. The
   YAML is re-dumped, so **comments in the job file are lost**; the result is validated before it is written. The add-on's
   *Copy overrides* button puts the same numbers on the clipboard.
-- Live builds go to `out/_live/`, never over `out/<name>/`. With no overrides they are byte-identical to `charforge run`
-  (tested). With overrides, the files are byte-identical to what `charforge run` makes from the YAML after `overrides apply`
+- Live builds go to `out/_live/`, never over `out/<name>/`. With no overrides they are byte-identical to `vgbuilder run`
+  (tested). With overrides, the files are byte-identical to what `vgbuilder run` makes from the YAML after `overrides apply`
   (tested for a building).
 
 ## Speed
@@ -65,24 +65,24 @@ the real output.
 ## In Blender
 
 The panel shows the job, its state, build status and failure codes, then the controls (sliders for numbers, drop-downs,
-toggles; a `*` marks a value you changed, with a reset button), *Reset all*, *Copy overrides*, and *Send to charforge*.
+toggles; a `*` marks a value you changed, with a reset button), *Reset all*, *Copy overrides*, and *Send to vgbuilder*.
 
-- Each build replaces the imported objects (collection `charforge:<name>`, an empty `charforge:<name>` as their parent).
+- Each build replaces the imported objects (collection `vgbuilder:<name>`, an empty `vgbuilder:<name>` as their parent).
   **Anything you edit on the imported objects is lost on the next build.** Press *Keep this version* first: it detaches
   the current objects (renames them "(kept ...)") and the next build imports fresh ones. Move/rotate/scale the empty and
   the placement survives rebuilds. Your selection and active object are restored after each import.
 - *All LODs + collision* imports the other levels and the collision proxy too (hidden). Effects load their flipbook and
   contact sheet as images instead of objects.
 - A build is not loaded while Blender is in Edit mode (the panel says so) and loads when you leave it.
-- *Send to charforge*: exports the selected objects as GLB into `inbox/` and writes a job (`provider: import_glb`,
-  `height_m` from the selection's world height). Process it with `charforge queue work --inbox out/_live/<name>/inbox --watch`.
+- *Send to vgbuilder*: exports the selected objects as GLB into `inbox/` and writes a job (`provider: import_glb`,
+  `height_m` from the selection's world height). Process it with `vgbuilder queue work --inbox out/_live/<name>/inbox --watch`.
   It is a normal import job: it is rigged, LOD'd and QA'd like any other import.
-- Starting the watcher from Blender runs the `charforge` program named in the panel; give a full path if Blender does not
+- Starting the watcher from Blender runs the `vgbuilder` program named in the panel; give a full path if Blender does not
   have it on its PATH.
 
 ## What is not covered
 
-- Not tested: the sidebar drawing, mouse interaction, real timer ticks, the `charforge blender` launcher, Blender's
+- Not tested: the sidebar drawing, mouse interaction, real timer ticks, the `vgbuilder blender` launcher, Blender's
   Extensions platform (a manifest ships, the install path tested is the classic *Install from Disk* of a zip), anything
   on Windows or macOS. The add-on's logic (polling, import and replace, sliders, override writing, send-selection, the
   watcher launcher, install/enable through Blender's add-on manager) is tested against the `bpy` module.

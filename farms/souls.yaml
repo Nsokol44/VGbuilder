@@ -1,4 +1,4 @@
-# Variant farm: 6 colour/wear variants of hero_souls. `charforge farm farms/souls.yaml --enqueue`
+# Variant farm: 6 colour/wear variants of hero_souls. `vgbuilder farm farms/souls.yaml --enqueue`
 base: ../jobs/hero_souls.yaml
 count: 6
 seed: 11

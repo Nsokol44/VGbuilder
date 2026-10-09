@@ -8,8 +8,8 @@ import numpy as np
 import pytest
 import yaml
 
-from charforge import concepts, sketch as sk, styles
-from charforge.spec import load_job
+from vgbuilder import concepts, sketch as sk, styles
+from vgbuilder.spec import load_job
 
 ROOT = Path(__file__).resolve().parents[1]
 

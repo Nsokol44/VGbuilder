@@ -13,16 +13,16 @@ import pytest
 
 bpy = pytest.importorskip("bpy")
 
-from charforge import live  # noqa: E402
-from charforge.live import LiveSession  # noqa: E402
-from charforge.orchestrator import Backend, build_one  # noqa: E402
-from charforge.providers import inspect_glb  # noqa: E402
-from charforge.spec import load_job  # noqa: E402
+from vgbuilder import live  # noqa: E402
+from vgbuilder.live import LiveSession  # noqa: E402
+from vgbuilder.orchestrator import Backend, build_one  # noqa: E402
+from vgbuilder.providers import inspect_glb  # noqa: E402
+from vgbuilder.spec import load_job  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-ADDON_PARENT = ROOT / "src" / "charforge" / "blender_addon"
+ADDON_PARENT = ROOT / "src" / "vgbuilder" / "blender_addon"
 sys.path.insert(0, str(ADDON_PARENT))
-import charforge_live as cf  # noqa: E402
+import vgbuilder_live as cf  # noqa: E402
 
 pytestmark = pytest.mark.bpy
 
@@ -46,7 +46,7 @@ def clean():
     wipe()
     cf._state.update(mtime=None, status=None, loaded_build=0, overrides={}, seq=0, dirty_at=None, syncing=False,
                      created={}, waiting_for_job=None, sig=None, adopted=False)
-    s = bpy.context.window_manager.charforge
+    s = bpy.context.window_manager.vgbuilder
     s.controls.clear()
     s.connected, s.session_dir, s.message, s.build_status, s.build_id, s.loaded_build = False, "", "", "", 0, 0
     s.import_extras, s.auto_reload = False, True
@@ -72,12 +72,12 @@ def hall_session(tmp_path_factory):
 
 
 def settings():
-    return bpy.context.window_manager.charforge
+    return bpy.context.window_manager.vgbuilder
 
 
 def connect(sess):
     settings().session_dir = str(sess.dir)
-    assert bpy.ops.charforge.connect() == {"FINISHED"}
+    assert bpy.ops.vgbuilder.connect() == {"FINISHED"}
 
 
 def tri_count(obj):
@@ -85,7 +85,7 @@ def tri_count(obj):
 
 
 def lod0_objects():
-    col = bpy.data.collections.get("charforge:struct_hall:LOD0")
+    col = bpy.data.collections.get("vgbuilder:struct_hall:LOD0")
     return [o for o in col.objects if o.type == "MESH"] if col else []
 
 
@@ -96,14 +96,14 @@ def height(objs):
 
 def test_registered_and_settings_defaults():
     s = settings()
-    assert s.auto_reload and not s.connected and s.charforge_cmd == "charforge"
-    assert "charforge" in dir(bpy.ops) and hasattr(bpy.ops.charforge, "connect")
+    assert s.auto_reload and not s.connected and s.vgbuilder_cmd == "vgbuilder"
+    assert "vgbuilder" in dir(bpy.ops) and hasattr(bpy.ops.vgbuilder, "connect")
 
 
 def test_connect_refuses_a_missing_session(tmp_path):
     settings().session_dir = str(tmp_path / "nope")
     with pytest.raises(RuntimeError, match="does not exist"):        # an ERROR report raises when called from Python
-        bpy.ops.charforge.connect()
+        bpy.ops.vgbuilder.connect()
     assert not settings().connected
 
 
@@ -118,9 +118,9 @@ def test_connect_shows_status_builds_sliders_and_imports_lod0(hall_session):
     manifest = json.loads((hall_session.dir / "manifest.json").read_text())
     want = manifest["iterations"][-1]["metrics"]["lod_tris"][0]
     assert sum(tri_count(o) for o in objs) == want
-    root = bpy.data.objects["charforge:struct_hall"]
+    root = bpy.data.objects["vgbuilder:struct_hall"]
     assert all(o.parent == root or o.parent in objs for o in objs)
-    assert bpy.data.collections.get("charforge:struct_hall:LOD1") is None          # LOD0 only by default
+    assert bpy.data.collections.get("vgbuilder:struct_hall:LOD1") is None          # LOD0 only by default
     floors = {c.path: c for c in s.controls}["structure.floors"]
     assert floors.kind == "int" and int(round(floors.f)) == 2 and (floors.vmin, floors.vmax) == (1, 12)
     style = {c.path: c for c in s.controls}["structure.style"]
@@ -131,7 +131,7 @@ def test_all_lods_and_collision_are_imported_hidden_when_asked(hall_session):
     settings().import_extras = True
     connect(hall_session)
     for lab in ("LOD0", "LOD1", "LOD2", "collision"):
-        col = bpy.data.collections.get(f"charforge:struct_hall:{lab}")
+        col = bpy.data.collections.get(f"vgbuilder:struct_hall:{lab}")
         assert col is not None and len(col.objects) > 0, lab
         assert col.hide_viewport == (lab != "LOD0"), lab
 
@@ -170,7 +170,7 @@ def test_slider_writes_overrides_debounced_then_new_build_replaces_the_objects(h
 
 def test_non_overridden_sliders_follow_the_server_and_placement_is_kept(hall_session):
     connect(hall_session)
-    root = bpy.data.objects["charforge:struct_hall"]
+    root = bpy.data.objects["vgbuilder:struct_hall"]
     root.location = (10, 5, 0)
     root.rotation_euler[2] = 0.5
     live.write_overrides(hall_session.overrides_path, {"structure.roof": "hip"})
@@ -178,7 +178,7 @@ def test_non_overridden_sliders_follow_the_server_and_placement_is_kept(hall_ses
     cf.poll()
     roof = {c.path: c for c in settings().controls}["structure.roof"]
     assert roof.e == "hip"
-    root = bpy.data.objects["charforge:struct_hall"]
+    root = bpy.data.objects["vgbuilder:struct_hall"]
     assert tuple(root.location) == (10, 5, 0) and root.rotation_euler[2] == pytest.approx(0.5)   # your placement stays
     o = lod0_objects()[0]
     assert o.matrix_world.translation.x != o.location.x or o.parent is not None
@@ -208,9 +208,9 @@ def test_choice_bool_reset_and_reset_all(hall_session):
     by["structure.roof"].e = "flat"
     by["structure.windows"].b = False
     assert cf._state["overrides"] == {"structure.roof": "flat", "structure.windows": False}
-    assert bpy.ops.charforge.reset_control(path="structure.roof") == {"FINISHED"}
+    assert bpy.ops.vgbuilder.reset_control(path="structure.roof") == {"FINISHED"}
     assert live.read_overrides(hall_session.overrides_path)[1] == {"structure.windows": False}
-    assert bpy.ops.charforge.reset_all() == {"FINISHED"}
+    assert bpy.ops.vgbuilder.reset_all() == {"FINISHED"}
     assert live.read_overrides(hall_session.overrides_path)[1] == {}
     assert cf._state["overrides"] == {}
 
@@ -220,7 +220,7 @@ def test_overrides_written_elsewhere_are_adopted_once(hall_session):
     hall_session.build_now()
     connect(hall_session)
     assert cf._state["overrides"] == {"structure.roof": "hip"}
-    bpy.ops.charforge.reset_all()
+    bpy.ops.vgbuilder.reset_all()
     cf.poll()
     assert cf._state["overrides"] == {}                                    # the stale status does not bring them back
     hall_session.build_now()
@@ -235,20 +235,20 @@ def test_copy_overrides_is_nested_valid_yaml(hall_session):
     txt = cf.overrides_as_yaml(cf._state["overrides"])
     d = yaml.safe_load(txt)
     assert d["structure"]["floors"] == 3 and d["wear"] == {"rust": 0.5}
-    assert d["structure"]["footprint"] == {"0": 14.0}      # index paths are for `charforge overrides apply`, which understands them
-    bpy.ops.charforge.copy_overrides()
+    assert d["structure"]["footprint"] == {"0": 14.0}      # index paths are for `vgbuilder overrides apply`, which understands them
+    bpy.ops.vgbuilder.copy_overrides()
 
 
 def test_keep_this_version_detaches_and_next_build_imports_fresh(hall_session):
     connect(hall_session)
     first = {o.name for o in lod0_objects()}
-    assert bpy.ops.charforge.keep() == {"FINISHED"}
+    assert bpy.ops.vgbuilder.keep() == {"FINISHED"}
     assert cf._state["created"] == {}
-    assert bpy.data.objects.get("charforge:struct_hall") is None
+    assert bpy.data.objects.get("vgbuilder:struct_hall") is None
     kept = [o for o in bpy.data.objects if o.type == "MESH" and o.name in first]
     assert kept and any("(kept" in c.name for c in bpy.data.collections)
-    assert bpy.ops.charforge.reload() == {"FINISHED"}
-    assert bpy.data.objects.get("charforge:struct_hall") is not None
+    assert bpy.ops.vgbuilder.reload() == {"FINISHED"}
+    assert bpy.data.objects.get("vgbuilder:struct_hall") is not None
     fresh = lod0_objects()
     assert fresh and not (set(fresh) & set(kept))
     assert all(o.name in bpy.data.objects for o in kept)                      # the kept copy was not touched
@@ -307,7 +307,7 @@ def test_a_failed_import_is_reported_and_does_not_loop(hall_session, tmp_path):
     lod0 = next(f for f in st["files"] if f.get("lod") == 0)
     (broken / lod0["file"]).write_bytes(b"not a glb")
     settings().session_dir = str(broken)
-    bpy.ops.charforge.connect()
+    bpy.ops.vgbuilder.connect()
     assert "import failed" in settings().message
     assert cf.poll() == "idle"                                                # not retried every tick
 
@@ -341,7 +341,7 @@ def test_send_selection_writes_glb_then_job_into_the_inbox(hall_session):
     o = make_box_character()
     s = settings()
     s.send_name = "my blocky guy!"
-    assert bpy.ops.charforge.send_selection() == {"FINISHED"}
+    assert bpy.ops.vgbuilder.send_selection() == {"FINISHED"}
     inbox = hall_session.dir / "inbox"
     assert sorted(p.name for p in inbox.iterdir()) == ["my_blocky_guy_.glb", "my_blocky_guy_.yaml"]      # no temp files left
     info = inspect_glb(inbox / "my_blocky_guy_.glb")
@@ -357,19 +357,19 @@ def test_send_selection_refuses_nothing_selected_or_flat(hall_session):
     connect(hall_session)
     before = sorted((hall_session.dir / "inbox").glob("*"))
     with pytest.raises(RuntimeError, match="nothing selected"):
-        bpy.ops.charforge.send_selection()
+        bpy.ops.vgbuilder.send_selection()
     bpy.ops.mesh.primitive_plane_add()
     with pytest.raises(RuntimeError, match="no height"):
-        bpy.ops.charforge.send_selection()
+        bpy.ops.vgbuilder.send_selection()
     assert sorted((hall_session.dir / "inbox").glob("*")) == before
 
 
-def test_start_watcher_launches_charforge_and_connects(tmp_path):
+def test_start_watcher_launches_vgbuilder_and_connects(tmp_path):
     job = job_copy(tmp_path, "fx_shockwave.yaml")
     s = settings()
     s.job_file, s.out_dir = str(job), str(tmp_path / "out")
-    s.charforge_cmd = str(Path(sys.executable).parent / "charforge")
-    assert bpy.ops.charforge.start_watcher() == {"FINISHED"}
+    s.vgbuilder_cmd = str(Path(sys.executable).parent / "vgbuilder")
+    assert bpy.ops.vgbuilder.start_watcher() == {"FINISHED"}
     try:
         end = time.time() + 90
         while time.time() < end:
@@ -378,9 +378,9 @@ def test_start_watcher_launches_charforge_and_connects(tmp_path):
                 break
             time.sleep(0.3)
         assert s.connected and s.job_name == "fx_shockwave" and s.build_status == "passed" and s.watcher_alive
-        assert (tmp_path / "out" / "charforge_watch.log").exists()
+        assert (tmp_path / "out" / "vgbuilder_watch.log").exists()
     finally:
-        bpy.ops.charforge.stop_watcher()
+        bpy.ops.vgbuilder.stop_watcher()
     w_end = time.time() + 20
     lj = tmp_path / "out" / "_live" / "fx_shockwave" / "live.json"
     while time.time() < w_end and json.loads(lj.read_text())["state"] != "stopped":
@@ -392,9 +392,9 @@ def test_start_watcher_launches_charforge_and_connects(tmp_path):
 def test_start_watcher_reports_a_missing_program(tmp_path):
     job = job_copy(tmp_path, "fx_shockwave.yaml")
     s = settings()
-    s.job_file, s.out_dir, s.charforge_cmd = str(job), str(tmp_path / "out"), "/nonexistent/charforge"
+    s.job_file, s.out_dir, s.vgbuilder_cmd = str(job), str(tmp_path / "out"), "/nonexistent/vgbuilder"
     with pytest.raises(RuntimeError, match="could not start"):
-        bpy.ops.charforge.start_watcher()
+        bpy.ops.vgbuilder.start_watcher()
     assert not s.connected
 
 
@@ -415,16 +415,16 @@ def test_reload_keeps_the_users_selection_and_active_object(hall_session):
 
 
 def test_zip_installs_and_enables_through_blenders_own_addon_manager(tmp_path):
-    """charforge addon zip -> Install from Disk -> enable, in a throwaway Blender user folder (bpy 5.2 legacy add-on path)."""
-    from charforge.cli import main
-    z = tmp_path / "charforge_live.zip"
+    """vgbuilder addon zip -> Install from Disk -> enable, in a throwaway Blender user folder (bpy 5.2 legacy add-on path)."""
+    from vgbuilder.cli import main
+    z = tmp_path / "vgbuilder_live.zip"
     assert main(["addon", "zip", "-O", str(z)]) == 0
     script = tmp_path / "inst.py"
     script.write_text(
         "import bpy\n"
         f"assert bpy.ops.preferences.addon_install(filepath={str(z)!r}, overwrite=True) == {{'FINISHED'}}\n"
-        "assert bpy.ops.preferences.addon_enable(module='charforge_live') == {'FINISHED'}\n"
-        "assert hasattr(bpy.context.window_manager, 'charforge') and hasattr(bpy.ops.charforge, 'connect')\n"
+        "assert bpy.ops.preferences.addon_enable(module='vgbuilder_live') == {'FINISHED'}\n"
+        "assert hasattr(bpy.context.window_manager, 'vgbuilder') and hasattr(bpy.ops.vgbuilder, 'connect')\n"
         "print('ADDON-OK')\n")
     import os
     env = {**os.environ, "HOME": str(tmp_path / "home"), "XDG_CONFIG_HOME": str(tmp_path / "home" / ".config"),
@@ -432,4 +432,4 @@ def test_zip_installs_and_enables_through_blenders_own_addon_manager(tmp_path):
     (tmp_path / "scripts").mkdir()
     r = subprocess.run([sys.executable, str(script)], capture_output=True, text=True, env=env, timeout=180)
     assert "ADDON-OK" in r.stdout, r.stdout[-800:] + r.stderr[-800:]
-    assert (tmp_path / "scripts" / "addons" / "charforge_live" / "__init__.py").is_file()
+    assert (tmp_path / "scripts" / "addons" / "vgbuilder_live" / "__init__.py").is_file()

@@ -125,7 +125,7 @@ def build_parts(names: list[str], p: dict[str, float], H: float, seg: int | None
         parts.append(Part("horns", _horns(p, H, seg, shp), joined=True))
     if "cape" in names:
         body, pin = _cape(p, H, seg, shp)
-        parts.append(Part("cape", body, joined=False, tags={"charforge_physics": "cloth", "cloth_pin_attribute": "_CLOTH_PIN"},
+        parts.append(Part("cape", body, joined=False, tags={"vgbuilder_physics": "cloth", "cloth_pin_attribute": "_CLOTH_PIN"},
                           point_attrs={"_CLOTH_PIN": pin}))
     return parts
 

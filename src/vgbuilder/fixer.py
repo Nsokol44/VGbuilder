@@ -1,6 +1,6 @@
 """Parameter handling between iterations.
 
-Sketch fitting is now a direct optimisation (charforge.fit) done once, in pure numpy, before
+Sketch fitting is now a direct optimisation (vgbuilder.fit) done once, in pure numpy, before
 Blender is involved. What is left for the fixer is the mechanical stuff QA can detect after a
 real build. Anything not listed here ends up as `needs_review` in the manifest, which is the
 point where a human (or an LLM agent reading the contact sheet) edits the job YAML.

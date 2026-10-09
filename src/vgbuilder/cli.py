@@ -157,16 +157,16 @@ def _watch(a) -> int:
 
 def _addon(a) -> int:
     from . import live  # noqa: F401
-    src = Path(__file__).parent / "blender_addon" / "charforge_live"
+    src = Path(__file__).parent / "blender_addon" / "vgbuilder_live"
     if a.acmd == "path":
         print(src)
         return 0
     import zipfile
-    dest = a.output or Path("charforge_live.zip")
+    dest = a.output or Path("vgbuilder_live.zip")
     with zipfile.ZipFile(dest, "w", zipfile.ZIP_DEFLATED) as z:
         for f in sorted(src.rglob("*")):
             if f.is_file() and "__pycache__" not in f.parts:
-                z.write(f, Path("charforge_live") / f.relative_to(src))
+                z.write(f, Path("vgbuilder_live") / f.relative_to(src))
     print(f"wrote {dest}  (Blender: Edit > Preferences > Add-ons > Install from Disk)")
     return 0
 
@@ -196,7 +196,7 @@ def _blender(a) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="charforge", description=__doc__)
+    ap = argparse.ArgumentParser(prog="vgbuilder", description=__doc__)
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     v = sub.add_parser("validate", help="check job files without building")
@@ -268,7 +268,7 @@ def main(argv: list[str] | None = None) -> int:
     ad = sub.add_parser("addon", help="the Blender add-on")
     ads = ad.add_subparsers(dest="acmd", required=True)
     ads.add_parser("path", help="print the add-on folder")
-    z = ads.add_parser("zip", help="make charforge_live.zip for Install from Disk"); z.add_argument("-O", "--output", type=Path)
+    z = ads.add_parser("zip", help="make vgbuilder_live.zip for Install from Disk"); z.add_argument("-O", "--output", type=Path)
 
     bl = sub.add_parser("blender", help="start the watcher and open Blender with the add-on connected to it")
     bl.add_argument("job", type=Path)

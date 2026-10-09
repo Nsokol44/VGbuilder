@@ -1,6 +1,6 @@
 """Runs ONE build iteration inside Blender, starting from an empty scene.
 
-    python -m charforge.bl.entry job.json result.json          # with the bpy module
+    python -m vgbuilder.bl.entry job.json result.json          # with the bpy module
     blender -b -P entry.py -- job.json result.json              # with a Blender binary
 
 The scene is rebuilt from scratch on every call, so the same job + params always give the
@@ -20,11 +20,11 @@ import bpy  # noqa: E402
 import numpy as np  # noqa: E402
 from PIL import Image  # noqa: E402
 
-from charforge import accessories, engines, proportions, sketch as sk  # noqa: E402
-from charforge.bl import anim, condition, export, looks, lod, measure, parts as parts_bl, procedural, render, rig  # noqa: E402
-from charforge.bodygen import build_body  # noqa: E402
-from charforge.rigdefs import joints_from_vertices  # noqa: E402
-from charforge.spec import JobSpec  # noqa: E402
+from vgbuilder import accessories, engines, proportions, sketch as sk  # noqa: E402
+from vgbuilder.bl import anim, condition, export, looks, lod, measure, parts as parts_bl, procedural, render, rig  # noqa: E402
+from vgbuilder.bodygen import build_body  # noqa: E402
+from vgbuilder.rigdefs import joints_from_vertices  # noqa: E402
+from vgbuilder.spec import JobSpec  # noqa: E402
 
 
 def _jsonable(o):
@@ -41,7 +41,7 @@ def _jsonable(o):
 
 def run(job: dict) -> dict:
     if job["spec"].get("kind") == "structure":
-        from charforge.bl import structure_build
+        from vgbuilder.bl import structure_build
         return structure_build.run(job)
     t0 = time.time()
     spec = JobSpec(**job["spec"])

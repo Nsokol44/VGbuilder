@@ -284,7 +284,7 @@ def particle_preset(name: str, cfg: dict[str, Any], m: dict[str, Any], sheet_fil
     ma = np.array(m["mean_alpha"])
     sp = np.array(m["spread"])
     return {
-        "schema": "charforge.vfx_preset/1", "name": name, "template": cfg["template"],
+        "schema": "vgbuilder.vfx_preset/1", "name": name, "template": cfg["template"],
         "duration_s": cfg["duration_s"], "blend": cfg["blend"],
         "flipbook": {"texture": sheet_file, "columns": m["columns"], "rows": m["rows"], "frames": m["frames"],
                      "frame_size_px": m["frame_px"], "fps": round(m["frames"] / cfg["duration_s"], 3)},
@@ -312,7 +312,7 @@ def build_effect(spec: JobSpec, out_root: Path, log: Callable[[str], None] = lam
     cfg = resolved(spec)
     style = spec.load_style()
     manifest: dict[str, Any] = {
-        "charforge_version": __version__, "name": spec.name, "kind": "effect", "fingerprint": spec.fingerprint(),
+        "vgbuilder_version": __version__, "name": spec.name, "kind": "effect", "fingerprint": spec.fingerprint(),
         "spec": {k: v for k, v in spec.to_dict().items() if k != "base_dir"},
         "environment": {"python": platform.python_version(), "numpy": np.__version__, "platform": platform.platform()},
         "effect_resolved": {k: v for k, v in cfg.items()},

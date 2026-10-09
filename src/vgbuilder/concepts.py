@@ -304,7 +304,7 @@ def run_concepts(path: Path, out_root: Path, log=print) -> dict[str, Any]:
         emitted.append(str(jp))
 
     manifest = {
-        "charforge_version": __version__, "kind": "concepts", "name": cfg["name"],
+        "vgbuilder_version": __version__, "kind": "concepts", "name": cfg["name"],
         "fingerprint": hashlib.sha256(json.dumps(cfg, sort_keys=True, default=str).encode()).hexdigest()[:16],
         "config": cfg, "style": style.name, "library_silhouettes": len(library),
         "candidates": [{"id": c.id, "params": c.params, "accessories": c.accessories, "shape": c.shape,

@@ -1,6 +1,6 @@
 """Blender side of the `structure` job kind: numpy building -> LOD meshes, UVs, textures, collision, export, re-import.
 
-Invoked from charforge.bl.entry.run() when spec.kind == "structure". Same contract as the character build: start from an
+Invoked from vgbuilder.bl.entry.run() when spec.kind == "structure". Same contract as the character build: start from an
 empty scene, return {"metrics", "files", ...}; nothing here reads state from an earlier run."""
 from __future__ import annotations
 

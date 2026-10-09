@@ -12,3 +12,4 @@ out2/
 # charforge working files
 *.bak
 live.heartbeat
+*.egg-info/

@@ -1,20 +1,20 @@
-"""charforge live: a window into a running `charforge watch` session.
+"""vgbuilder live: a window into a running `vgbuilder watch` session.
 
-This add-on does not import charforge. It reads and writes the small JSON files of the live protocol (see
-charforge/live.py): it shows the latest build, offers the job's controls as sliders, writes your changes to
-live_overrides.json, and sends the selected objects into the charforge inbox.
+This add-on does not import vgbuilder. It reads and writes the small JSON files of the live protocol (see
+vgbuilder/live.py): it shows the latest build, offers the job's controls as sliders, writes your changes to
+live_overrides.json, and sends the selected objects into the vgbuilder inbox.
 
 Whatever it imports into the scene is build output: the next build replaces it. Use "Keep this version" to detach
 the current objects from the link before editing them by hand.
 """
 # SPDX-License-Identifier: GPL-3.0-or-later
 bl_info = {
-    "name": "charforge live",
-    "author": "charforge",
+    "name": "VGbuilder Live",
+    "author": "VGbuilder",
     "version": (0, 1, 0),
     "blender": (4, 2, 0),
-    "location": "3D Viewport > Sidebar > charforge",
-    "description": "Live view and sliders for charforge jobs; send the selection to charforge",
+    "location": "3D Viewport > Sidebar > VGbuilder",
+    "description": "Live view and sliders for vgbuilder jobs; send the selection to vgbuilder",
     "category": "Import-Export",
 }
 
@@ -44,7 +44,7 @@ _state = {
 _enum_cache: dict[str, list] = {}
 
 
-# ------------------------------------------------------------------ files (same rules as charforge.live)
+# ------------------------------------------------------------------ files (same rules as vgbuilder.live)
 def _write_json_atomic(path, data):
     path = Path(path)
     tmp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
@@ -100,7 +100,7 @@ def _changed(self, _ctx):
         return
     _state["overrides"][self.path] = _value_of(self)
     _state["dirty_at"] = time.monotonic()
-    bpy.context.window_manager.charforge.pending = True
+    bpy.context.window_manager.vgbuilder.pending = True
 
 
 def _get_t(self):
@@ -221,7 +221,7 @@ def _load_image(name, path):
 def reload_build(settings, status):
     """Replace the imported objects of this job with the files of the build in `status`. Returns a message."""
     sd = _session(settings)
-    name = status.get("name", "charforge")
+    name = status.get("name", "vgbuilder")
     if bpy.context.mode != "OBJECT":
         return "paused: leave edit mode to load the new build"
     files = status.get("files", [])
@@ -233,7 +233,7 @@ def reload_build(settings, status):
     for f in files:
         if f.get("role") in ("contact_sheet", "effect") and str(f["file"]).endswith(".png"):
             try:
-                _load_image(f"charforge:{name}:{Path(f['file']).name.split('_', 1)[-1]}", sd / f["file"])
+                _load_image(f"vgbuilder:{name}:{Path(f['file']).name.split('_', 1)[-1]}", sd / f["file"])
             except RuntimeError:
                 pass
     if not glbs:
@@ -244,10 +244,10 @@ def reload_build(settings, status):
     prev_object = bpy.context.view_layer.objects.active
     prev_object_name = prev_object.name if prev_object is not None else None
     prev_selected = [o.name for o in bpy.context.selected_objects]
-    top = _get_collection(f"charforge:{name}", scene.collection)
-    root = bpy.data.objects.get(f"charforge:{name}")
+    top = _get_collection(f"vgbuilder:{name}", scene.collection)
+    root = bpy.data.objects.get(f"vgbuilder:{name}")
     if root is None:
-        root = bpy.data.objects.new(f"charforge:{name}", None)
+        root = bpy.data.objects.new(f"vgbuilder:{name}", None)
         root.empty_display_type = "ARROWS"
     if root.name not in top.objects:
         top.objects.link(root)
@@ -255,7 +255,7 @@ def reload_build(settings, status):
     created = {"objects": [], "data": {k: [] for k in DATA_KINDS}}
     try:
         for label, f in glbs:
-            col = _get_collection(f"charforge:{name}:{label}", top)
+            col = _get_collection(f"vgbuilder:{name}:{label}", top)
             lc = _layer_collection(bpy.context.view_layer.layer_collection, col)
             if lc is not None:
                 bpy.context.view_layer.active_layer_collection = lc
@@ -292,12 +292,12 @@ def keep_current(name):
     """Detach the objects of this job from the link: they stay in the scene as ordinary objects; the next build
     imports fresh ones."""
     _state["created"].pop(name, None)
-    root = bpy.data.objects.get(f"charforge:{name}")
+    root = bpy.data.objects.get(f"vgbuilder:{name}")
     stamp = time.strftime("%H%M%S")
     if root is not None:
         root.name = f"{root.name} (kept {stamp})"
     for col in list(bpy.data.collections):
-        if col.name == f"charforge:{name}" or col.name.startswith(f"charforge:{name}:"):
+        if col.name == f"vgbuilder:{name}" or col.name.startswith(f"vgbuilder:{name}:"):
             col.name = f"{col.name} (kept {stamp})"
 
 
@@ -305,7 +305,7 @@ def keep_current(name):
 def poll(settings=None):
     """One poll of the session folder. Returns a short string saying what happened (used by tests)."""
     wm = bpy.context.window_manager
-    settings = settings or wm.charforge
+    settings = settings or wm.vgbuilder
     did = []
     if _state["waiting_for_job"]:
         found = _find_session(_state["waiting_for_job"])
@@ -375,10 +375,10 @@ def _tick():
         poll()
     except Exception as e:  # noqa: BLE001 - never kill the timer
         try:
-            bpy.context.window_manager.charforge.message = f"poll error: {type(e).__name__}: {e}"
+            bpy.context.window_manager.vgbuilder.message = f"poll error: {type(e).__name__}: {e}"
         except Exception:  # noqa: BLE001
             pass
-    if not bpy.context.window_manager.charforge.connected:
+    if not bpy.context.window_manager.vgbuilder.connected:
         _state["timer"] = False
         return None
     return POLL_S
@@ -406,10 +406,10 @@ def _job_name(path):
 
 # ------------------------------------------------------------------ settings, operators, panel
 class CFSettings(PropertyGroup):
-    session_dir: StringProperty(name="Session", subtype="DIR_PATH", description="out/_live/<job name> of a running `charforge watch`")
-    job_file: StringProperty(name="Job", subtype="FILE_PATH", description="A charforge job .yaml")
+    session_dir: StringProperty(name="Session", subtype="DIR_PATH", description="out/_live/<job name> of a running `vgbuilder watch`")
+    job_file: StringProperty(name="Job", subtype="FILE_PATH", description="A vgbuilder job .yaml")
     out_dir: StringProperty(name="Output", subtype="DIR_PATH", default="//out")
-    charforge_cmd: StringProperty(name="charforge", default="charforge", description="The charforge program (full path if it is not on Blender's PATH)")
+    vgbuilder_cmd: StringProperty(name="VGbuilder", default="vgbuilder", description="The vgbuilder program (full path if it is not on Blender's PATH)")
     connected: BoolProperty()
     auto_reload: BoolProperty(name="Auto reload", default=True)
     import_extras: BoolProperty(name="All LODs + collision", default=False, description="Also import the other LODs and the collision proxy (hidden)")
@@ -427,14 +427,14 @@ class CFSettings(PropertyGroup):
     send_name: StringProperty(name="Name", default="from_blender")
 
 
-class CHARFORGE_OT_connect(Operator):
-    bl_idname = "charforge.connect"
+class VGBUILDER_OT_connect(Operator):
+    bl_idname = "vgbuilder.connect"
     bl_label = "Connect"
 
     def execute(self, context):
-        s = context.window_manager.charforge
+        s = context.window_manager.vgbuilder
         if _session(s) is None:
-            self.report({"ERROR"}, "Session folder does not exist. Start `charforge watch` first, or use Start watcher.")
+            self.report({"ERROR"}, "Session folder does not exist. Start `vgbuilder watch` first, or use Start watcher.")
             return {"CANCELLED"}
         s.connected = True
         _state.update(mtime=None, loaded_build=0, sig=None, adopted=False)
@@ -445,33 +445,33 @@ class CHARFORGE_OT_connect(Operator):
         return {"FINISHED"}
 
 
-class CHARFORGE_OT_disconnect(Operator):
-    bl_idname = "charforge.disconnect"
+class VGBUILDER_OT_disconnect(Operator):
+    bl_idname = "vgbuilder.disconnect"
     bl_label = "Disconnect"
 
     def execute(self, context):
-        context.window_manager.charforge.connected = False
+        context.window_manager.vgbuilder.connected = False
         return {"FINISHED"}
 
 
-class CHARFORGE_OT_start_watcher(Operator):
-    bl_idname = "charforge.start_watcher"
+class VGBUILDER_OT_start_watcher(Operator):
+    bl_idname = "vgbuilder.start_watcher"
     bl_label = "Start watcher"
-    bl_description = "Run `charforge watch` for the job file, then connect to it"
+    bl_description = "Run `vgbuilder watch` for the job file, then connect to it"
 
     def execute(self, context):
-        s = context.window_manager.charforge
+        s = context.window_manager.vgbuilder
         job = Path(bpy.path.abspath(s.job_file))
         out = Path(bpy.path.abspath(s.out_dir))
         if not job.is_file():
             self.report({"ERROR"}, f"job file not found: {job}")
             return {"CANCELLED"}
         out.mkdir(parents=True, exist_ok=True)
-        log = open(out / "charforge_watch.log", "ab")
+        log = open(out / "vgbuilder_watch.log", "ab")
         try:
-            _state["watcher"] = subprocess.Popen([s.charforge_cmd, "watch", str(job), "-o", str(out)], stdout=log, stderr=log)
+            _state["watcher"] = subprocess.Popen([s.vgbuilder_cmd, "watch", str(job), "-o", str(out)], stdout=log, stderr=log)
         except OSError as e:
-            self.report({"ERROR"}, f"could not start {s.charforge_cmd!r}: {e}")
+            self.report({"ERROR"}, f"could not start {s.vgbuilder_cmd!r}: {e}")
             return {"CANCELLED"}
         name = _job_name(job)
         _state["waiting_out"] = str(out)
@@ -489,8 +489,8 @@ class CHARFORGE_OT_start_watcher(Operator):
         return {"FINISHED"}
 
 
-class CHARFORGE_OT_stop_watcher(Operator):
-    bl_idname = "charforge.stop_watcher"
+class VGBUILDER_OT_stop_watcher(Operator):
+    bl_idname = "vgbuilder.stop_watcher"
     bl_label = "Stop watcher"
 
     def execute(self, context):
@@ -501,12 +501,12 @@ class CHARFORGE_OT_stop_watcher(Operator):
         return {"FINISHED"}
 
 
-class CHARFORGE_OT_reload(Operator):
-    bl_idname = "charforge.reload"
+class VGBUILDER_OT_reload(Operator):
+    bl_idname = "vgbuilder.reload"
     bl_label = "Reload now"
 
     def execute(self, context):
-        s = context.window_manager.charforge
+        s = context.window_manager.vgbuilder
         st = _state["status"]
         if not st or not st.get("files"):
             self.report({"WARNING"}, "no build to load yet")
@@ -517,34 +517,34 @@ class CHARFORGE_OT_reload(Operator):
         return {"FINISHED"}
 
 
-class CHARFORGE_OT_keep(Operator):
-    bl_idname = "charforge.keep"
+class VGBUILDER_OT_keep(Operator):
+    bl_idname = "vgbuilder.keep"
     bl_label = "Keep this version"
     bl_description = "Detach the current objects from the live link so you can edit them by hand; the next build imports fresh ones"
 
     def execute(self, context):
-        keep_current(context.window_manager.charforge.job_name)
+        keep_current(context.window_manager.vgbuilder.job_name)
         return {"FINISHED"}
 
 
-class CHARFORGE_OT_reset_control(Operator):
-    bl_idname = "charforge.reset_control"
+class VGBUILDER_OT_reset_control(Operator):
+    bl_idname = "vgbuilder.reset_control"
     bl_label = "Reset"
     path: StringProperty()
 
     def execute(self, context):
         _state["overrides"].pop(self.path, None)
-        _flush_overrides(context.window_manager.charforge)
+        _flush_overrides(context.window_manager.vgbuilder)
         return {"FINISHED"}
 
 
-class CHARFORGE_OT_reset_all(Operator):
-    bl_idname = "charforge.reset_all"
+class VGBUILDER_OT_reset_all(Operator):
+    bl_idname = "vgbuilder.reset_all"
     bl_label = "Reset all"
 
     def execute(self, context):
         _state["overrides"].clear()
-        _flush_overrides(context.window_manager.charforge)
+        _flush_overrides(context.window_manager.vgbuilder)
         return {"FINISHED"}
 
 
@@ -560,10 +560,10 @@ def overrides_as_yaml(overrides):
     return json.dumps(tree, indent=2)
 
 
-class CHARFORGE_OT_copy_overrides(Operator):
-    bl_idname = "charforge.copy_overrides"
+class VGBUILDER_OT_copy_overrides(Operator):
+    bl_idname = "vgbuilder.copy_overrides"
     bl_label = "Copy overrides"
-    bl_description = "Copy the current overrides to the clipboard (or run `charforge overrides apply JOB --write`)"
+    bl_description = "Copy the current overrides to the clipboard (or run `vgbuilder overrides apply JOB --write`)"
 
     def execute(self, context):
         context.window_manager.clipboard = overrides_as_yaml(_state["overrides"])
@@ -578,13 +578,13 @@ def _selection_height(objs):
     return (max(zs) - min(zs)) if zs else 0.0
 
 
-class CHARFORGE_OT_send_selection(Operator):
-    bl_idname = "charforge.send_selection"
-    bl_label = "Send selection to charforge"
+class VGBUILDER_OT_send_selection(Operator):
+    bl_idname = "vgbuilder.send_selection"
+    bl_label = "Send selection to VGbuilder"
     bl_description = "Export the selected objects as GLB into the session inbox, with a job file that imports them"
 
     def execute(self, context):
-        s = context.window_manager.charforge
+        s = context.window_manager.vgbuilder
         sd = _session(s)
         if sd is None:
             self.report({"ERROR"}, "connect to a session first")
@@ -608,33 +608,33 @@ class CHARFORGE_OT_send_selection(Operator):
         tmpy = inbox / f".{name}.tmp"
         tmpy.write_text(job)
         os.replace(tmpy, inbox / f"{name}.yaml")           # the job file lands last: the queue only looks at *.yaml
-        self.report({"INFO"}, f"sent {name}; run: charforge queue work --inbox {inbox} --watch")
+        self.report({"INFO"}, f"sent {name}; run: vgbuilder queue work --inbox {inbox} --watch")
         return {"FINISHED"}
 
 
-class CHARFORGE_PT_panel(Panel):
-    bl_label = "charforge"
-    bl_idname = "CHARFORGE_PT_panel"
+class VGBUILDER_PT_panel(Panel):
+    bl_label = "vgbuilder"
+    bl_idname = "VGBUILDER_PT_panel"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "charforge"
+    bl_category = "VGbuilder"
 
     def draw(self, context):
-        s = context.window_manager.charforge
+        s = context.window_manager.vgbuilder
         lay = self.layout
         box = lay.box()
         if not s.connected:
             box.prop(s, "job_file")
             box.prop(s, "out_dir")
-            box.prop(s, "charforge_cmd")
-            box.operator("charforge.start_watcher", icon="PLAY")
+            box.prop(s, "vgbuilder_cmd")
+            box.operator("vgbuilder.start_watcher", icon="PLAY")
             box.separator()
             box.prop(s, "session_dir")
-            box.operator("charforge.connect", icon="LINKED")
+            box.operator("vgbuilder.connect", icon="LINKED")
             return
         row = box.row()
         row.label(text=f"{s.job_name or '...'}: {s.live_state}", icon="TIME" if s.live_state == "building" else "CHECKMARK")
-        row.operator("charforge.disconnect", text="", icon="X")
+        row.operator("vgbuilder.disconnect", text="", icon="X")
         if not s.watcher_alive:
             box.label(text="watcher is not running (no heartbeat)", icon="ERROR")
         if s.build_status:
@@ -649,11 +649,11 @@ class CHARFORGE_PT_panel(Panel):
             box.label(text="sending changes...", icon="TIME")
         row = box.row(align=True)
         row.prop(s, "auto_reload")
-        row.operator("charforge.reload", text="Reload now")
+        row.operator("vgbuilder.reload", text="Reload now")
         box.prop(s, "import_extras")
-        box.operator("charforge.keep", icon="PINNED")
+        box.operator("vgbuilder.keep", icon="PINNED")
         if _state.get("watcher") is not None:
-            box.operator("charforge.stop_watcher", icon="PAUSE")
+            box.operator("vgbuilder.stop_watcher", icon="PAUSE")
 
         group = None
         col = None
@@ -672,33 +672,33 @@ class CHARFORGE_PT_panel(Panel):
             else:
                 row.prop(c, "e", text=f"{marker}{c.label}")
             if c.path in _state["overrides"]:
-                op = row.operator("charforge.reset_control", text="", icon="LOOP_BACK")
+                op = row.operator("vgbuilder.reset_control", text="", icon="LOOP_BACK")
                 op.path = c.path
         row = lay.row(align=True)
-        row.operator("charforge.reset_all")
-        row.operator("charforge.copy_overrides", icon="COPYDOWN")
+        row.operator("vgbuilder.reset_all")
+        row.operator("vgbuilder.copy_overrides", icon="COPYDOWN")
 
         box = lay.box()
-        box.label(text="Send to charforge")
+        box.label(text="Send to vgbuilder")
         box.prop(s, "send_name")
-        box.operator("charforge.send_selection", icon="EXPORT")
+        box.operator("vgbuilder.send_selection", icon="EXPORT")
 
 
-CLASSES = (CFControl, CFSettings, CHARFORGE_OT_connect, CHARFORGE_OT_disconnect, CHARFORGE_OT_start_watcher,
-           CHARFORGE_OT_stop_watcher, CHARFORGE_OT_reload, CHARFORGE_OT_keep, CHARFORGE_OT_reset_control,
-           CHARFORGE_OT_reset_all, CHARFORGE_OT_copy_overrides, CHARFORGE_OT_send_selection, CHARFORGE_PT_panel)
+CLASSES = (CFControl, CFSettings, VGBUILDER_OT_connect, VGBUILDER_OT_disconnect, VGBUILDER_OT_start_watcher,
+           VGBUILDER_OT_stop_watcher, VGBUILDER_OT_reload, VGBUILDER_OT_keep, VGBUILDER_OT_reset_control,
+           VGBUILDER_OT_reset_all, VGBUILDER_OT_copy_overrides, VGBUILDER_OT_send_selection, VGBUILDER_PT_panel)
 
 
 def register():
     for c in CLASSES:
         bpy.utils.register_class(c)
-    bpy.types.WindowManager.charforge = PointerProperty(type=CFSettings)
+    bpy.types.WindowManager.vgbuilder = PointerProperty(type=CFSettings)
 
 
 def unregister():
     w = _state.get("watcher")
     if w is not None and w.poll() is None:
         w.terminate()
-    del bpy.types.WindowManager.charforge
+    del bpy.types.WindowManager.vgbuilder
     for c in reversed(CLASSES):
         bpy.utils.unregister_class(c)

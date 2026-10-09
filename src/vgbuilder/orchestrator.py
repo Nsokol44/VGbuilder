@@ -36,8 +36,8 @@ class Backend:
 
     def command(self, job_json: Path, result_json: Path) -> list[str]:
         if self.kind == "bpy-module":
-            return [sys.executable, "-m", "charforge.bl.entry", str(job_json), str(result_json)]
-        entry = SRC_DIR / "charforge" / "bl" / "entry.py"
+            return [sys.executable, "-m", "vgbuilder.bl.entry", str(job_json), str(result_json)]
+        entry = SRC_DIR / "vgbuilder" / "bl" / "entry.py"
         return [self.exe or "blender", "-b", "--factory-startup", "-P", str(entry), "--", str(job_json), str(result_json)]
 
 
@@ -67,14 +67,14 @@ def run_iteration(backend: Backend, spec: JobSpec, params: dict, glb: Path | Non
 
 def build_one(spec: JobSpec, out_root: Path, backend: Backend,
               log: Callable[[str], None] = lambda s: None, fit_cache: Path | None = None) -> dict[str, Any]:
-    if spec.kind == "effect":              # no Blender involved: see charforge.effects
+    if spec.kind == "effect":              # no Blender involved: see vgbuilder.effects
         from .effects import build_effect
         return build_effect(spec, out_root, log)
     t0 = time.time()
     out_dir = out_root / spec.name
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest: dict[str, Any] = {
-        "charforge_version": __version__, "name": spec.name, "fingerprint": spec.fingerprint(),
+        "vgbuilder_version": __version__, "name": spec.name, "fingerprint": spec.fingerprint(),
         "spec": {k: v for k, v in spec.to_dict().items() if k != "base_dir"},
         "environment": {"python": platform.python_version(), "numpy": np.__version__, "platform": platform.platform()},
         "iterations": [], "status": "error",
@@ -113,7 +113,7 @@ def build_one(spec: JobSpec, out_root: Path, backend: Backend,
     # Goes INTO every exported glb (scene extras), so the file carries its own recipe. No timestamps or
     # absolute paths: the same job must still rebuild byte-identical files.
     embed = {
-        "charforge": __version__, "name": spec.name, "fingerprint": spec.fingerprint(),
+        "vgbuilder": __version__, "name": spec.name, "fingerprint": spec.fingerprint(),
         "sketch_sha256": manifest.get("sketch_sha256"), "sketch_side_sha256": manifest.get("sketch_side_sha256"),
         "provider": {k: v for k, v in provenance.items() if k not in ("glb", "cached", "seconds")},
         "style": ({"name": style.name, "sha256": manifest["style_resolved"]["sha256"]} if style is not None else None),

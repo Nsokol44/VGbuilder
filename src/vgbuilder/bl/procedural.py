@@ -1,4 +1,4 @@
-"""Turn the numpy body (charforge.bodygen) into a Blender mesh with skin weights.
+"""Turn the numpy body (vgbuilder.bodygen) into a Blender mesh with skin weights.
 
 The mesh is all triangles, using the exact triangulation the fitter evaluated."""
 from __future__ import annotations

@@ -8,7 +8,7 @@
 * hunyuan     - HTTP: POST the sketch to a Hunyuan3D-style API server, get a GLB back
 * http        - same client with no defaults: you say which fields and which response shape
 
-None of the third-party model code is shipped or called by charforge. Every provider ends the same way: a GLB
+None of the third-party model code is shipped or called by vgbuilder. Every provider ends the same way: a GLB
 on disk that has been *inspected* (valid container, at least one triangle) plus a provenance dict.
 
 Failures are structured: `ProviderError.code` is one of CODES and `.retryable` says whether trying again can help

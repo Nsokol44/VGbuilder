@@ -8,12 +8,12 @@ import numpy as np
 import pytest
 import yaml
 
-from charforge import qa, structuregen as sg, structuremeasure as sm
-from charforge.bl.export import read_embedded
-from charforge.farm import make_variants
-from charforge.library import Library, summarize, work
-from charforge.orchestrator import Backend, build_one
-from charforge.spec import JobSpec, load_job
+from vgbuilder import qa, structuregen as sg, structuremeasure as sm
+from vgbuilder.bl.export import read_embedded
+from vgbuilder.farm import make_variants
+from vgbuilder.library import Library, summarize, work
+from vgbuilder.orchestrator import Backend, build_one
+from vgbuilder.spec import JobSpec, load_job
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -325,7 +325,7 @@ def test_structure_lod_rules():
 
 
 def test_over_budget_is_fixable_by_dropping_detail_not_by_segments():
-    from charforge import fixer
+    from vgbuilder import fixer
     spec = sjob(poly_budget=1500)
     fails = qa.evaluate(good_metrics(lod_tris=[1900, 1200, 60]), spec)
     assert [f["code"] for f in fails] == ["over_budget"] and fails[0]["fixable"]

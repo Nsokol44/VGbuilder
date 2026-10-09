@@ -35,7 +35,7 @@ def e(x) -> str:
 
 
 def page(title: str, body: str) -> bytes:
-    nav = '<header><b>charforge</b><a href="/">library</a><a href="/?review=pending">to review</a><a href="/queue">queue</a></header>'
+    nav = '<header><b>vgbuilder</b><a href="/">library</a><a href="/?review=pending">to review</a><a href="/queue">queue</a></header>'
     return (f"<!doctype html><meta charset=utf-8><title>{e(title)}</title><style>{CSS}</style>{nav}<main>{body}</main>").encode()
 
 
@@ -51,7 +51,7 @@ def summary_line(s: dict) -> str:
 
 def make_handler(lib: Library):
     class H(BaseHTTPRequestHandler):
-        server_version = "charforge-review"
+        server_version = "vgbuilder-review"
 
         def log_message(self, *a):  # quiet
             pass

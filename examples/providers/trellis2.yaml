@@ -1,5 +1,5 @@
 # Example only (not in jobs/, because it needs a wrapper you provide): an image-to-3D model on a local GPU.
-# charforge never calls TRELLIS itself. `command` is YOUR program: it reads {image}, writes a GLB to {out}, exits 0.
+# vgbuilder never calls TRELLIS itself. `command` is YOUR program: it reads {image}, writes a GLB to {out}, exits 0.
 # Placeholders: {python} {image} {side_image} {out} {seed} {name} {faces} {texture_size}
 name: hero_trellis
 sketch: ../sketches/hero_front.png

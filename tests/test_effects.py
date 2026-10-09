@@ -8,9 +8,9 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from charforge import effects
-from charforge.orchestrator import Backend, build_one
-from charforge.spec import EFFECT_TEMPLATES, JobSpec, load_job
+from vgbuilder import effects
+from vgbuilder.orchestrator import Backend, build_one
+from vgbuilder.spec import EFFECT_TEMPLATES, JobSpec, load_job
 
 ROOT = Path(__file__).resolve().parents[1]
 

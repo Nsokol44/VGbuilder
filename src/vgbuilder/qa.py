@@ -212,7 +212,7 @@ def evaluate(metrics: dict[str, Any], spec: JobSpec) -> list[dict[str, Any]]:
         elif acc == "cape":
             node = f"{spec.name}_cape"
             for k, gc in enumerate(contents):
-                tagged = gc["nodes"].get(node, {}).get("charforge_physics") == "cloth"
+                tagged = gc["nodes"].get(node, {}).get("vgbuilder_physics") == "cloth"
                 pinned = any("_CLOTH_PIN" in a for a in gc["mesh_attributes"].values())
                 if not (tagged and pinned):
                     fail("accessory_missing", f"cape in LOD{k} glb lacks its cloth tag or _CLOTH_PIN attribute", accessory=acc)

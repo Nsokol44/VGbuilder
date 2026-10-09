@@ -1,19 +1,19 @@
 """Live link: keep a job built while it is being edited, from a text editor or from inside a running Blender.
 
-charforge never talks to Blender directly. The two sides share a folder and two small JSON files:
+vgbuilder never talks to Blender directly. The two sides share a folder and two small JSON files:
 
     <out>/_live/<name>/live_overrides.json   written by the editor side (the Blender add-on, a script, by hand)
                                              {"seq": 7, "overrides": {"structure.floors": 4, "params.leg_frac": 0.5}}
-    <out>/_live/<name>/live.json             written by `charforge watch`: state, build id, failures, the files of the
+    <out>/_live/<name>/live.json             written by `vgbuilder watch`: state, build id, failures, the files of the
                                              latest build, and the controls (sliders) this job offers
     <out>/_live/<name>/published/<build>/    an immutable copy of each finished build (so a reader never sees a
                                              half-written file); the last few are kept
     <out>/_live/<name>/live.heartbeat        touched about once a second while the watcher is alive
 
-The build itself is the ordinary one: the same `build_one` that `charforge run` uses, on the job file with the
-overrides laid over it before validation. With no overrides the glb files are byte-identical to `charforge run`
+The build itself is the ordinary one: the same `build_one` that `vgbuilder run` uses, on the job file with the
+overrides laid over it before validation. With no overrides the glb files are byte-identical to `vgbuilder run`
 (live builds go to `_live/` so they never overwrite the normal output). Overrides live beside the job, not in it:
-the YAML stays the source of truth until you apply them (`charforge overrides apply`).
+the YAML stays the source of truth until you apply them (`vgbuilder overrides apply`).
 
 Overrides are limited to the knobs of the design (see ALLOWED_ROOTS). They can never set a provider, a provider
 command, a critic command or a file path, because anything that can write the overrides file would otherwise be able to
@@ -258,8 +258,8 @@ def _kind_of(name: str) -> dict[str, Any]:
     return {"role": "other"}
 
 
-# `charforge watch --fast`: a cheaper build for dragging sliders (LOD0 only, small textures, one QA round, no
-# animations). It is a different build than the real one: its files are NOT what `charforge run` would make, and
+# `vgbuilder watch --fast`: a cheaper build for dragging sliders (LOD0 only, small textures, one QA round, no
+# animations). It is a different build than the real one: its files are NOT what `vgbuilder run` would make, and
 # live.json says "fast": true. Drop --fast (or apply the overrides and run normally) for the real output.
 FAST = {"lods": [1.0], "texture_size": 256, "max_iterations": 1}
 FAST_CHARACTER = {"animations": []}
@@ -346,7 +346,7 @@ class LiveSession:
             return {"state": "invalid"}
         if spec.name != self.name:
             self._built_stamp = stamp
-            self._publish(state="invalid", error=f"the job's name changed to {spec.name!r}; restart `charforge watch`")
+            self._publish(state="invalid", error=f"the job's name changed to {spec.name!r}; restart `vgbuilder watch`")
             return {"state": "invalid"}
         self._refresh_watch_files(spec)
         self._built_stamp = self.stamp()

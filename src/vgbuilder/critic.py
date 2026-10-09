@@ -1,5 +1,5 @@
 """Optional critic hook: an external command (typically a vision-language model wrapper) looks at the
-finished asset and returns a score plus notes. charforge does not ship or call any model itself.
+finished asset and returns a score plus notes. vgbuilder does not ship or call any model itself.
 
 Contract
 --------

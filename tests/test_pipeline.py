@@ -11,8 +11,8 @@ import pytest
 bpy = pytest.importorskip("bpy")
 
 ROOT = Path(__file__).resolve().parents[1]
-from charforge.orchestrator import Backend, build_one  # noqa: E402
-from charforge.spec import load_job  # noqa: E402
+from vgbuilder.orchestrator import Backend, build_one  # noqa: E402
+from vgbuilder.spec import load_job  # noqa: E402
 
 pytestmark = pytest.mark.bpy
 
@@ -95,7 +95,7 @@ def test_same_job_gives_byte_identical_glb(jobs, hero, tmp_path):
 def test_every_exported_lod_reimports_skinned(hero):
     m, out = hero
     me = m["iterations"][m["best_iteration"] - 1]["metrics"]
-    from charforge.bl import export
+    from vgbuilder.bl import export
     for k, tris in enumerate(me["lod_tris"]):
         rt = export.roundtrip_glb(out / "hero" / "final" / f"hero_LOD{k}.glb", tris, 1.8, 18)
         assert rt["ok"], (k, rt)
@@ -146,10 +146,10 @@ def test_failing_generator_is_reported_not_raised(jobs, tmp_path):
 
 def test_unweighted_islands_get_nearest_bone_fallback(jobs, tmp_path):
     """A floating shell far from any bone must still end up skinned (QA 'unweighted' stays at 0)."""
-    from charforge.bl import condition, rig
-    from charforge.bodygen import build_body
-    from charforge.bl.procedural import mesh_from_body
-    from charforge.spec import DEFAULT_BODY_PARAMS
+    from vgbuilder.bl import condition, rig
+    from vgbuilder.bodygen import build_body
+    from vgbuilder.bl.procedural import mesh_from_body
+    from vgbuilder.spec import DEFAULT_BODY_PARAMS
 
     condition.reset_scene()
     p = {**DEFAULT_BODY_PARAMS, "segments": 8.0}
@@ -162,7 +162,7 @@ def test_unweighted_islands_get_nearest_bone_fallback(jobs, tmp_path):
         bpy.ops.object.join()
     arm = rig.build_armature(body.joints, "simple", "t")
     report = rig.auto_weights(obj, arm, body.joints, "simple")
-    from charforge.bl.measure import zero_weight_fraction
+    from vgbuilder.bl.measure import zero_weight_fraction
     assert zero_weight_fraction(obj) == 0.0
     assert report["verts"] == len(obj.data.vertices)
 
@@ -201,7 +201,7 @@ def test_unity_job_uses_humanoid_names_and_records_the_preset(hero2):
 
 
 def test_skin_influence_limit_caps_and_renormalises():
-    from charforge.bl import condition, rig
+    from vgbuilder.bl import condition, rig
 
     condition.reset_scene()
     bpy.ops.mesh.primitive_cube_add()
@@ -221,10 +221,10 @@ def test_skin_influence_limit_caps_and_renormalises():
 
 @pytest.mark.parametrize("engine", ["generic", "unity", "unreal", "godot"])
 def test_every_preset_exports_glb_and_fbx(engine, tmp_path):
-    from charforge.bl import condition, export, procedural, rig
-    from charforge.bodygen import build_body
-    from charforge.spec import DEFAULT_BODY_PARAMS
-    from charforge.engines import preset
+    from vgbuilder.bl import condition, export, procedural, rig
+    from vgbuilder.bodygen import build_body
+    from vgbuilder.spec import DEFAULT_BODY_PARAMS
+    from vgbuilder.engines import preset
 
     condition.reset_scene()
     body = build_body({**DEFAULT_BODY_PARAMS, "segments": 6.0}, 1.8)
@@ -309,7 +309,7 @@ def test_lod_chain_is_measured_and_consistent(hero):
 
 
 def test_every_glb_carries_its_own_recipe(hero2):
-    from charforge.bl.export import read_embedded
+    from vgbuilder.bl.export import read_embedded
 
     m, out = hero2
     it = m["iterations"][m["best_iteration"] - 1]
@@ -323,7 +323,7 @@ def test_every_glb_carries_its_own_recipe(hero2):
 
 
 def test_embedded_style_hash_matches_the_manifest(souls):
-    from charforge.bl.export import read_embedded
+    from vgbuilder.bl.export import read_embedded
 
     m, out = souls
     blob = read_embedded(out / "hero_souls" / "final" / "hero_souls_LOD0.glb")
@@ -332,9 +332,9 @@ def test_embedded_style_hash_matches_the_manifest(souls):
 
 
 def test_a_glb_without_the_block_reads_as_none(tmp_path):
-    from charforge.bl import condition, export, procedural, rig
-    from charforge.bodygen import build_body
-    from charforge.spec import DEFAULT_BODY_PARAMS
+    from vgbuilder.bl import condition, export, procedural, rig
+    from vgbuilder.bodygen import build_body
+    from vgbuilder.spec import DEFAULT_BODY_PARAMS
 
     condition.reset_scene()
     body = build_body({**DEFAULT_BODY_PARAMS, "segments": 6.0}, 1.8)
@@ -376,17 +376,17 @@ def test_gear_job_passes_with_sketch_judged_on_the_base_body(gear):
 
 
 def test_cape_is_a_separate_cloth_tagged_mesh_with_pin_weights(gear):
-    from charforge.bl.export import read_summary
+    from vgbuilder.bl.export import read_summary
 
     _, out = gear
     for lod in (0, 1, 2):
         s = read_summary(out / "hero_gear" / "final" / f"hero_gear_LOD{lod}.glb")
-        assert s["nodes"]["hero_gear_cape"]["charforge_physics"] == "cloth"
+        assert s["nodes"]["hero_gear_cape"]["vgbuilder_physics"] == "cloth"
         assert any("_CLOTH_PIN" in attrs for attrs in s["mesh_attributes"].values())
 
 
 def test_animations_are_in_every_glb_and_loop(gear):
-    from charforge.bl.export import read_summary
+    from vgbuilder.bl.export import read_summary
 
     m, out = gear
     met = m["iterations"][m["best_iteration"] - 1]["metrics"]
@@ -408,7 +408,7 @@ def test_fbx_with_animations_exports(gear):
 
 
 def test_animation_survives_reimport(gear):
-    from charforge.bl import condition
+    from vgbuilder.bl import condition
 
     _, out = gear
     condition.reset_scene()

@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS assets (
   fingerprint TEXT NOT NULL, tags TEXT NOT NULL DEFAULT '[]', style_template TEXT,
   parent TEXT, spec TEXT NOT NULL, summary TEXT NOT NULL DEFAULT '{}', failures TEXT NOT NULL DEFAULT '[]',
   manifest_path TEXT, final_dir TEXT, thumb TEXT, silhouette TEXT, critic TEXT,
-  charforge_version TEXT, created_at TEXT NOT NULL, UNIQUE(name, version)
+  vgbuilder_version TEXT, created_at TEXT NOT NULL, UNIQUE(name, version)
 );
 CREATE TABLE IF NOT EXISTS asset_files (
   asset_id INTEGER NOT NULL REFERENCES assets(id), file TEXT NOT NULL, sha256 TEXT, bytes INTEGER,
@@ -156,12 +156,12 @@ class Library:
             sil = next((f for f in by if f.endswith("_silhouette_front.png")), None)
             cur = c.execute(
                 "INSERT INTO assets (name, version, kind, status, fingerprint, tags, style_template, parent, spec, summary,"
-                " failures, manifest_path, final_dir, thumb, silhouette, charforge_version, created_at)"
+                " failures, manifest_path, final_dir, thumb, silhouette, vgbuilder_version, created_at)"
                 " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (name, ver, _kind(manifest), manifest["status"], fp, json.dumps(tags),
                  spec_d.get("style_template"), parent, json.dumps(spec_d, default=str), json.dumps(summarize(manifest)),
                  json.dumps(manifest.get("final_failures", [])), self._store(Path(out_root) / name / "manifest.json"),
-                 self._store(final), thumb, sil, manifest.get("charforge_version"), _now()))
+                 self._store(final), thumb, sil, manifest.get("vgbuilder_version"), _now()))
             aid = cur.lastrowid
             for f in files:
                 c.execute("INSERT INTO asset_files VALUES (?,?,?,?)", (aid, f["file"], f.get("sha256"), f.get("bytes")))

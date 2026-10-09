@@ -11,11 +11,11 @@ from pathlib import Path
 import pytest
 import yaml
 
-from charforge import live
-from charforge.cli import main
-from charforge.live import LiveSession, OverrideError, apply_overrides
-from charforge.orchestrator import Backend, build_one
-from charforge.spec import load_job
+from vgbuilder import live
+from vgbuilder.cli import main
+from vgbuilder.live import LiveSession, OverrideError, apply_overrides
+from vgbuilder.orchestrator import Backend, build_one
+from vgbuilder.spec import load_job
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -370,17 +370,17 @@ def test_cli_addon_commands(tmp_path, capsys):
     z = tmp_path / "a.zip"
     assert main(["addon", "zip", "-O", str(z)]) == 0
     names = set(zipfile.ZipFile(z).namelist())
-    assert {"charforge_live/__init__.py", "charforge_live/blender_manifest.toml"} <= names
+    assert {"vgbuilder_live/__init__.py", "vgbuilder_live/blender_manifest.toml"} <= names
     assert not any("__pycache__" in n for n in names)
 
 
 def test_live_core_and_addon_have_no_hidden_dependencies():
-    """live.py must import without Blender; the add-on must not import charforge (it only speaks the file protocol)."""
+    """live.py must import without Blender; the add-on must not import vgbuilder (it only speaks the file protocol)."""
     import ast
-    core = ast.parse((ROOT / "src/charforge/live.py").read_text())
+    core = ast.parse((ROOT / "src/vgbuilder/live.py").read_text())
     mods = {n.module if isinstance(n, ast.ImportFrom) else a.name for n in ast.walk(core) if isinstance(n, (ast.Import, ast.ImportFrom)) for a in (n.names if isinstance(n, ast.Import) else [n])}
     assert "bpy" not in mods
-    addon = ast.parse((ROOT / "src/charforge/blender_addon/charforge_live/__init__.py").read_text())
+    addon = ast.parse((ROOT / "src/vgbuilder/blender_addon/vgbuilder_live/__init__.py").read_text())
     names = set()
     for n in ast.walk(addon):
         if isinstance(n, ast.Import):
@@ -388,11 +388,11 @@ def test_live_core_and_addon_have_no_hidden_dependencies():
         elif isinstance(n, ast.ImportFrom):
             names.add((n.module or "").split(".")[0])
     assert names <= {"json", "os", "re", "subprocess", "time", "pathlib", "bpy"}, names
-    assert "charforge" not in names
+    assert "vgbuilder" not in names
 
 
 def test_addon_and_core_agree_on_the_protocol():
-    src = (ROOT / "src/charforge/blender_addon/charforge_live/__init__.py").read_text()
+    src = (ROOT / "src/vgbuilder/blender_addon/vgbuilder_live/__init__.py").read_text()
     assert f"PROTOCOL = {live.PROTOCOL}" in src
 
 
@@ -423,7 +423,7 @@ def test_restarting_the_watcher_continues_build_ids_and_survives_leftovers(tmp_p
     assert status(a)["build_id"] == 2
     (a.dir / "published" / "00003.tmp").mkdir()                              # a build that died halfway
     (a.dir / "published" / "00003.tmp" / "junk").write_text("x")
-    b = LiveSession(job, out, Backend(), log=lambda s: None)                 # a second `charforge watch` on the same folder
+    b = LiveSession(job, out, Backend(), log=lambda s: None)                 # a second `vgbuilder watch` on the same folder
     assert b.build_id == 2 and status(b)["build_id"] == 2 and status(b)["state"] == "idle"
     b.build_now()
     assert status(b)["build_id"] == 3 and status(b)["state"] == "idle"
@@ -439,8 +439,8 @@ def test_restarting_the_watcher_continues_build_ids_and_survives_leftovers(tmp_p
 def test_fit_cache_gives_the_same_answer_and_is_keyed_on_the_inputs(tmp_path):
     import numpy as np
 
-    from charforge import fixer
-    from charforge.sketch import load_mask
+    from vgbuilder import fixer
+    from vgbuilder.sketch import load_mask
     spec = load_job(ROOT / "jobs" / "hero_gear.yaml")
     mask = load_mask(spec.resolve_path(spec.sketch))
     cache = tmp_path / "fit"
@@ -484,7 +484,7 @@ def test_character_rebuild_through_the_fit_cache_is_byte_identical(tmp_path):
 
 
 def test_an_edit_that_arrives_during_a_build_is_built_next(tmp_path, monkeypatch):
-    from charforge import orchestrator
+    from vgbuilder import orchestrator
     job, sess = effect_session(tmp_path)
     real = orchestrator.build_one
     calls = []

@@ -6,9 +6,9 @@ import math
 import numpy as np
 import pytest
 
-from charforge import accessories, fixer, qa, rigdefs
-from charforge.bodygen import build_body
-from charforge.spec import DEFAULT_BODY_PARAMS, JobSpec
+from vgbuilder import accessories, fixer, qa, rigdefs
+from vgbuilder.bodygen import build_body
+from vgbuilder.spec import DEFAULT_BODY_PARAMS, JobSpec
 
 H = 1.8
 P = {**DEFAULT_BODY_PARAMS, "segments": 8.0}
@@ -21,7 +21,7 @@ def parts(names):
 def test_which_parts_join_the_body_and_which_stay_separate():
     ps = parts(["cape", "pauldrons", "horns"])
     assert {n for n, p in ps.items() if p.joined} == {"pauldrons", "horns"}
-    assert not ps["cape"].joined and ps["cape"].tags["charforge_physics"] == "cloth"
+    assert not ps["cape"].joined and ps["cape"].tags["vgbuilder_physics"] == "cloth"
 
 
 def test_parts_are_x_mirror_symmetric():
@@ -85,7 +85,7 @@ def test_accessories_need_the_procedural_body():
 
 # --------------------------------------------------------------- animation poses
 def anim():
-    from charforge.bl import anim as a  # needs bpy only for import; pose_for itself is pure
+    from vgbuilder.bl import anim as a  # needs bpy only for import; pose_for itself is pure
     return a
 
 
@@ -118,7 +118,7 @@ def test_idle_stays_small():
 
 def test_sign_conventions_match_the_rig():
     """The docstring's claim, checked on the real armature: forward = -Y."""
-    from charforge.bl import anim as a, condition, rig
+    from vgbuilder.bl import anim as a, condition, rig
 
     condition.reset_scene()
     body = build_body(P, H)
@@ -150,7 +150,7 @@ def _codes(metrics, **spec_kw):
 
 
 def _content(anim_channels=10, targets=("Hips",), cape=True):
-    nodes = {"a_cape": {"charforge_physics": "cloth"}} if cape else {}
+    nodes = {"a_cape": {"vgbuilder_physics": "cloth"}} if cape else {}
     return {"nodes": nodes, "mesh_attributes": {"a_cape": ["POSITION", "_CLOTH_PIN"]} if cape else {},
             "animations": {"walk": {"channels": anim_channels, "targets": list(targets)}}}
 
@@ -182,5 +182,5 @@ def test_missing_animation_everywhere_is_flagged():
 def test_cape_without_cloth_tag_or_pin_is_flagged():
     base = dict(animations={}, accessories={"cape": {"tris": 1}})
     assert "accessory_missing" in _codes(_metrics(**base, glb_content=[{"nodes": {"a_cape": {}}, "mesh_attributes": {"a_cape": ["_CLOTH_PIN"]}, "animations": {}}]), accessories=["cape"])
-    assert "accessory_missing" in _codes(_metrics(**base, glb_content=[{"nodes": {"a_cape": {"charforge_physics": "cloth"}}, "mesh_attributes": {"a_cape": ["POSITION"]}, "animations": {}}]), accessories=["cape"])
+    assert "accessory_missing" in _codes(_metrics(**base, glb_content=[{"nodes": {"a_cape": {"vgbuilder_physics": "cloth"}}, "mesh_attributes": {"a_cape": ["POSITION"]}, "animations": {}}]), accessories=["cape"])
     assert "accessory_missing" in _codes(_metrics(), accessories=["horns"])
