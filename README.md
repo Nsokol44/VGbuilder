@@ -10,7 +10,7 @@ Three kinds of job:
 
 | Kind | Input | Output |
 |---|---|---|
-| `character` | front/side sketches + spec | rigged humanoid with LODs, procedural wear textures, optional accessories and idle/walk loops |
+| `character` | front/side sketches + spec | rigged humanoid with LODs, procedural wear textures, optional accessories and a procedural animation set (idle/walk loops + attack, hit, cast, death one-shots, optional root motion and sprite-sheet export) |
 | `structure` | numbers only (`structure:` block) | procedural hall / gothic ruin / tower with real openings, roofs, seeded damage, built-in LODs, lightmap UVs, collision proxy |
 | `effect` | numbers only (`effect:` block) | fireball / explosion / shockwave / smoke flipbook + particle preset JSON (no Blender needed) |
 
@@ -107,6 +107,13 @@ the rest of the line.
   sha256 are embedded in every exported file. Generated meshes then go through
   the same normalise → decimate → rig → LOD → QA path as procedural ones.
 - Examples: `examples/providers/*.yaml`.
+- **Running a real generator on your own GPU:** `examples/gpu_handoff/` has a
+  ready bridge (`trellis2_local.py`, driven by `TRELLIS2_HOME` or any generator
+  CLI via `TRELLIS2_CMD`), a no-GPU self-test job (`hero_fake.yaml`), a real
+  job (`hero_trellis.yaml`), and a step-by-step README. The wrapper's
+  command-mode is test-covered with a stub; the TRELLIS.2 API path itself is
+  written against its public API shape and is the one piece not exercised by
+  the test suite (no GPU on the build machine).
 
 Licence notes: TRELLIS.2 is MIT (its rendering dependency nvdiffrast has its
 own licence). Tencent's Hunyuan3D 2.x community licences exclude the EU, UK
@@ -127,6 +134,17 @@ are rejected at validate time. Highlights:
   tagged `vgbuilder_physics=cloth` with pin weights for the engine
 - `animations: [idle, walk]` — procedural loops with loop-closure and
   floor-penetration QA
+- `animations` also takes one-shots — `attack_light`, `hit`, `cast` (must end
+  back at the rest pose) and `death` (must end down; a capped floor-clamp pass
+  keeps the prone body out of the ground and reports its lift). Add
+  `root_motion: true` to key forward root travel into `walk` / `attack_light`.
+- `sprite_sheet: true` — also render the animations from a fixed front camera
+  into a transparent sprite sheet + JSON metadata (frame size, constant pivot,
+  per-animation rows/fps/loop). Pre-rendered-from-3D for 2D games, labelled as
+  such in the metadata — not hand-drawn pixel art.
+- textures default to 1024px (request up to 4096); QA additionally gates mean
+  saturation, value range (flat/blank detection) and texel density
+  (`qa.texture_min_texel_density`, raise it for hero assets).
 - `target_engine: generic/unity/unreal/godot` — bone naming, skin-influence
   limits, FBX axes
 - `critic: {command, min_score}` — an external scoring hook (JSON contract in
@@ -139,7 +157,7 @@ pipeline" write-up, row by row.
 
 ```bash
 pytest -q tests/test_live.py tests/test_addon.py   # the live link only (~2 min)
-pytest -q                                          # everything: 406 tests, ~9 min, mostly Blender builds
+pytest -q                                          # everything: 416 tests, ~10 min, mostly Blender builds
 ```
 
 ## What is verified — and what is not

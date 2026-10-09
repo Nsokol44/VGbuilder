@@ -1,0 +1,15 @@
+# Self-test for the GPU handoff: the shipped FAKE generator (a subdivided box with the
+# sketch's silhouette) through the same command-provider slot the real generator uses.
+# If this passes on your machine, the slot + rig + LOD + QA all work; only the real
+# generator remains unproven. No GPU needed.
+name: hero_fake
+sketch: ../sketches/hero.png
+provider: command
+provider_args:
+  command: "{python} ../fake_generator.py {image} {out}"
+style_template: souls_like
+target_engine: godot
+height_m: 1.8
+texture_size: 512
+animations: [idle, walk]
+seed: 7

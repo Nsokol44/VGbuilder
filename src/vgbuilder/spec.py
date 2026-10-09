@@ -20,7 +20,12 @@ NAMINGS = {"auto", "ue", "simple", "humanoid"}
 FORMATS = {"glb", "fbx"}
 KINDS = {"character", "effect", "structure"}
 ACCESSORIES = {"cape", "pauldrons", "horns"}
-ANIMATIONS = {"idle", "walk"}
+ANIMATIONS = {"idle", "walk", "attack_light", "hit", "death", "cast"}
+# loop = cycles forever; oneshot_recover = plays once and must end back at the rest pose;
+# oneshot_fall = plays once and must end DOWN (pelvis dropped), e.g. death.
+ANIM_KINDS = {"idle": "loop", "walk": "loop",
+              "attack_light": "oneshot_recover", "hit": "oneshot_recover", "cast": "oneshot_recover",
+              "death": "oneshot_fall"}
 TEXTURE_MODES = {"auto", "replace", "keep", "none"}
 SIDE_FACINGS = {"left", "right"}
 EFFECT_TEMPLATES = {"fireball", "explosion", "shockwave", "smoke"}
@@ -57,7 +62,12 @@ DEFAULT_QA: dict[str, float] = {
     "lod_silhouette_min": 0.85,       # front and side silhouette IoU of every LOD against LOD0
     "lod_height_tolerance": 0.01,     # LOD height vs LOD0 height, fraction
     "anim_floor_penetration": 0.02,   # lowest vertex during an animation may dip this fraction of height below z=0
-    "anim_max_rotation": 1.5,         # radians, any bone
+    "anim_max_rotation": 2.2,         # radians, any bone (an overhead cast reaches ~1.9; this still catches grotesque twists)
+    "anim_max_end_delta": 0.08,       # radians: a recovering one-shot (attack/hit/cast) must end this close to its start pose
+    "texture_max_mean_saturation": 0.60,  # base-colour mean saturation cap (the house look is desaturated; per-job override)
+    "texture_min_value_range": 0.10,      # value p98-p02 of the base colour: below this the texture is blank/uniform
+                                          # (measured: a good souls bake is ~0.31, low-wear ~0.22, over-ground ~0.06)
+    "texture_min_texel_density": 100.0,   # baked texture pixels per metre of character height (raise per job for hero assets)
     "silhouette_iou_min_generated": 0.78,  # front IoU gate for generated / imported meshes; same as procedural until
                                            # real generator output exists to calibrate a looser one (override per job)
     "silhouette_collapse_iou": 0.30,       # below this a generated mesh is reported as unrelated to the sketch
@@ -94,10 +104,13 @@ class JobSpec:
     style_overrides: dict[str, Any] = field(default_factory=dict)  # e.g. {"hue_shift_deg": 20, "wear": {...}}
     wear: dict[str, float] = field(default_factory=dict)           # per-job wear overrides
     texture: str = "auto"                   # auto | replace | keep | none   (needs style_template for anything but none)
-    texture_size: int = 512                 # baked texture edge in pixels
+    texture_size: int = 1024                # baked texture edge in pixels (1K default; request 2048 for hero assets)
     accessories: list[str] = field(default_factory=list)           # cape | pauldrons | horns
     accessory_shape: dict[str, float] = field(default_factory=dict)  # pauldron_scale, horn_len, horn_spread, cape_len, cape_flare
-    animations: list[str] = field(default_factory=list)            # idle | walk
+    animations: list[str] = field(default_factory=list)            # idle | walk | attack_light | hit | death | cast
+    root_motion: bool = False               # key forward root travel into walk / attack_light (pelvis), for engines that drive movement from the clip
+    sprite_sheet: bool = False              # also render the animations as a pre-rendered sprite sheet (2D games) + JSON metadata
+    sprite_size: int = 256                  # sprite frame edge in pixels
     effect: dict[str, Any] = field(default_factory=dict)           # for kind: effect
     structure: dict[str, Any] = field(default_factory=dict)        # for kind: structure (see structuregen.resolve)
     priority: int = 0                       # queue order, higher first
@@ -118,6 +131,8 @@ class JobSpec:
         if set(self.wear) - WEAR_KEYS:
             raise ValueError(f"unknown wear keys: {sorted(set(self.wear) - WEAR_KEYS)}")
         if self.kind == "effect":
+            if self.sprite_sheet or self.root_motion:
+                raise ValueError("sprite_sheet / root_motion are character-only")
             tpl = self.effect.get("template")
             if tpl not in EFFECT_TEMPLATES:
                 raise ValueError(f"effect.template must be one of {sorted(EFFECT_TEMPLATES)}")
@@ -145,6 +160,10 @@ class JobSpec:
         validate_shape(self.accessory_shape)
         if not set(self.animations) <= ANIMATIONS:
             raise ValueError(f"animations must be a subset of {sorted(ANIMATIONS)}")
+        if self.sprite_sheet and not self.animations:
+            raise ValueError("sprite_sheet needs at least one animation to render")
+        if not (64 <= self.sprite_size <= 1024):
+            raise ValueError("sprite_size must be in [64, 1024]")
         if self.texture not in TEXTURE_MODES:
             raise ValueError(f"texture must be one of {sorted(TEXTURE_MODES)}")
         if not (64 <= self.texture_size <= 4096):
@@ -192,6 +211,8 @@ class JobSpec:
                 raise ValueError(f"{k} is not supported for structures yet (the footprint comes from structure.footprint)")
         if self.accessories or self.animations:
             raise ValueError("accessories and animations are character-only")
+        if self.sprite_sheet or self.root_motion:
+            raise ValueError("sprite_sheet and root_motion are character-only")
         bad = set(self.params) - {"detail_level"}
         if bad:
             raise ValueError(f"structure params may only contain detail_level, got {sorted(bad)}")

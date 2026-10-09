@@ -112,7 +112,7 @@ def test_walk_swings_arms_against_legs_and_flexes_the_knee_of_the_swinging_leg()
 
 def test_idle_stays_small():
     a = anim()
-    worst = max(abs(x) for ph in np.linspace(0, 1, 25) for eul, _ in a.pose_for("idle", ph, H).values() for x in eul)
+    worst = max(abs(x) for ph in np.linspace(0, 1, 25) for eul, *_ in a.pose_for("idle", ph, H).values() for x in eul)
     assert worst < 0.1
 
 

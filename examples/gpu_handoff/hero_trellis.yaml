@@ -1,0 +1,16 @@
+# GPU path demo: the hero sketch fed through a local image-to-3D generator.
+# Run on a GPU machine — see README.md in this folder. The wrapper (trellis2_local.py)
+# sits next to this file because provider commands run with the job folder as cwd.
+name: hero_trellis
+sketch: ../sketches/hero.png
+provider: command
+provider_args:
+  command: "{python} trellis2_local.py {image} {out} {seed}"
+  resource: gpu
+  timeout_s: 1800
+style_template: souls_like
+target_engine: godot
+height_m: 1.8
+texture_size: 1024
+animations: [idle, walk, attack_light, hit, cast, death]
+seed: 7

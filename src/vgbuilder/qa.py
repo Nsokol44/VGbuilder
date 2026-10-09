@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Any
 
 from . import lookdev
-from .spec import JobSpec
+from .spec import ANIM_KINDS, JobSpec
 
 # Bones every humanoid must have, by logical role. Names per naming scheme live in bl/rig.py
 REQUIRED_ROLES = [
@@ -216,23 +216,41 @@ def evaluate(metrics: dict[str, Any], spec: JobSpec) -> list[dict[str, Any]]:
                 pinned = any("_CLOTH_PIN" in a for a in gc["mesh_attributes"].values())
                 if not (tagged and pinned):
                     fail("accessory_missing", f"cape in LOD{k} glb lacks its cloth tag or _CLOTH_PIN attribute", accessory=acc)
-    for anim in spec.animations:
-        info = (metrics.get("animations") or {}).get(anim)
+    for anim_name in spec.animations:
+        info = (metrics.get("animations") or {}).get(anim_name)
         if info is None:
-            fail("anim_missing", f"animation {anim} was not built", animation=anim)
+            fail("anim_missing", f"animation {anim_name} was not built", animation=anim_name)
             continue
-        if not info["loops"]:
-            fail("anim_not_looping", f"{anim}: last frame differs from the first", animation=anim)
+        kind = ANIM_KINDS[anim_name]
+        if kind == "loop":
+            if not info["loops"]:
+                fail("anim_not_looping", f"{anim_name}: last frame differs from the first", animation=anim_name)
+            if spec.root_motion and anim_name == "walk" and info.get("root_distance_m", 0.0) < 0.2 * spec.height_m:
+                fail("anim_root_motion", f"walk: root_motion requested but the clip travels only "
+                     f"{info.get('root_distance_m', 0.0):.2f} m", animation=anim_name)
+        elif kind == "oneshot_recover":
+            if info.get("end_delta_rad", 0.0) > qa["anim_max_end_delta"]:
+                fail("anim_not_recovered", f"{anim_name}: ends {info['end_delta_rad']:.2f} rad from its start pose "
+                     f"(max {qa['anim_max_end_delta']})", animation=anim_name)
+        elif kind == "oneshot_fall":
+            if info.get("pelvis_drop_m", 0.0) < 0.22 * spec.height_m:
+                fail("anim_not_down", f"{anim_name}: pelvis drops only {info.get('pelvis_drop_m', 0.0):.2f} m; "
+                     "a fall must end down", animation=anim_name)
         if info["max_stretch"] > qa["max_edge_stretch"]:
-            fail("anim_bad_deformation", f"{anim}: edge stretch {info['max_stretch']:.2f}x (max {qa['max_edge_stretch']}x)", animation=anim)
+            fail("anim_bad_deformation", f"{anim_name}: edge stretch {info['max_stretch']:.2f}x (max {qa['max_edge_stretch']}x)", animation=anim_name)
         if info["min_z_m"] < -qa["anim_floor_penetration"] * spec.height_m:
-            fail("anim_floor_penetration", f"{anim}: lowest point {info['min_z_m']:.3f} m below the floor", animation=anim)
+            fail("anim_floor_penetration", f"{anim_name}: lowest point {info['min_z_m']:.3f} m below the floor", animation=anim_name)
         if info["max_rotation_rad"] > qa["anim_max_rotation"]:
-            fail("anim_range", f"{anim}: a joint rotates {info['max_rotation_rad']:.2f} rad", animation=anim)
+            fail("anim_range", f"{anim_name}: a joint rotates {info['max_rotation_rad']:.2f} rad", animation=anim_name)
         for k, gc in enumerate(contents):
-            a = gc["animations"].get(anim)
+            a = gc["animations"].get(anim_name)
             if not a or a["channels"] == 0 or not set(a["targets"]) <= bones:
-                fail("anim_missing", f"{anim} is absent or targets non-bone nodes in the LOD{k} glb", animation=anim)
+                fail("anim_missing", f"{anim_name} is absent or targets non-bone nodes in the LOD{k} glb", animation=anim_name)
+
+    if spec.sprite_sheet:
+        sp = metrics.get("sprites")
+        if not sp or not sp.get("ok"):
+            fail("sprites_missing", "sprite_sheet was requested but no sprite sheet was rendered")
 
     tex = metrics.get("texture")
     if tex and tex.get("analysis") is not None and "analysis" in tex:
@@ -242,6 +260,20 @@ def evaluate(metrics: dict[str, Any], spec: JobSpec) -> list[dict[str, Any]]:
                 # wear coverage can be corrected by rebuilding with a different wear_scale, but only for textures we bake
                 fixable = f["code"] == "texture_wear_coverage" and f["direction"] in ("more", "less") and tex["mode"] == "replace"
                 fail(f["code"], f["detail"], fixable=fixable, direction=f["direction"])
+            a = tex["analysis"]
+            if a.get("mean_saturation", 0.0) > qa["texture_max_mean_saturation"]:
+                fail("texture_too_saturated", f"base colour mean saturation {a['mean_saturation']:.2f} "
+                     f"(max {qa['texture_max_mean_saturation']})")
+            vrange = a.get("value_p98", 0.0) - a.get("value_p02", 0.0)
+            if vrange < qa["texture_min_value_range"]:
+                fail("texture_flat", f"base colour value range {vrange:.2f} (min {qa['texture_min_value_range']}): "
+                     "texture reads as flat/blank")
+            tex_size = tex.get("size")
+            if tex_size:
+                density = tex_size / spec.height_m
+                if density < qa["texture_min_texel_density"]:
+                    fail("texture_resolution_low", f"texture {tex_size}px over {spec.height_m:.2f} m = "
+                         f"{density:.0f} px/m (min {qa['texture_min_texel_density']:.0f})")
     return fails
 
 

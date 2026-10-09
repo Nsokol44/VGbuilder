@@ -21,7 +21,7 @@ import numpy as np  # noqa: E402
 from PIL import Image  # noqa: E402
 
 from vgbuilder import accessories, engines, proportions, sketch as sk  # noqa: E402
-from vgbuilder.bl import anim, condition, export, looks, lod, measure, parts as parts_bl, procedural, render, rig  # noqa: E402
+from vgbuilder.bl import anim, condition, export, looks, lod, measure, parts as parts_bl, procedural, render, rig, sprites  # noqa: E402
 from vgbuilder.bodygen import build_body  # noqa: E402
 from vgbuilder.rigdefs import joints_from_vertices  # noqa: E402
 from vgbuilder.spec import JobSpec  # noqa: E402
@@ -146,9 +146,13 @@ def run(job: dict) -> dict:
     if spec.provider == "procedural":
         metrics["proportions"] = proportions.report(params, H)
 
-    actions = anim.create_actions(arm, naming, list(spec.animations), H) if spec.animations else {}
+    actions = anim.create_actions(arm, naming, list(spec.animations), H, root_motion=spec.root_motion) if spec.animations else {}
     if actions:
-        metrics["animations"] = anim.measure(arm, lods[0], actions, naming, H)
+        lifts = anim.clamp_floor(arm, lods[0], actions, naming)
+        metrics["animations"] = anim.measure(arm, lods[0], actions, naming, H, root_motion=spec.root_motion)
+        for a, v in lifts.items():
+            if a in metrics["animations"]:
+                metrics["animations"][a]["floor_lift_m"] = v
         steps.append("animations")
 
     sil_files = []
@@ -160,6 +164,14 @@ def run(job: dict) -> dict:
     sheet = out_dir / f"{name}_contact_sheet.png"
     metrics["render"] = render.contact_sheet(lods, arm, H, naming, sheet)
     steps.append("contact_sheet")
+
+    sprite_files: list[Path] = []
+    if spec.sprite_sheet and actions:
+        srep = sprites.render_sprites(lods, arm, actions, naming, H, out_dir, name, spec.sprite_size)
+        metrics["sprites"] = srep
+        if srep.get("ok"):
+            sprite_files = [out_dir / srep["sheet"], out_dir / srep["metadata"]]
+        steps.append("sprites")
 
     blend = out_dir / f"{name}.blend"
     bpy.ops.wm.save_as_mainfile(filepath=str(blend))
@@ -187,7 +199,7 @@ def run(job: dict) -> dict:
         "metrics": metrics,
         "profiles": profiles,
         "crotch": crotch,
-        "files": [str(p) for p in files] + [str(sheet), str(blend)] + [str(p) for p in extra_files] + [str(p) for p in sil_files],
+        "files": [str(p) for p in files] + [str(sheet), str(blend)] + [str(p) for p in extra_files] + [str(p) for p in sil_files] + [str(p) for p in sprite_files],
         "steps": steps,
         "blender_version": bpy.app.version_string,
         "seconds": round(time.time() - t0, 2),
